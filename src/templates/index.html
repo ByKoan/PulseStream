@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ current_song }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+<button class="logout" onclick="window.location.href='/logout'">Cerrar sesión</button>
+
+<h1>Bienvenido, {{ session['user_id'] }}</h1>
+<h2>Canción actual: <span id="currentSongTitle">{{ current_song }}</span></h2>
+
+<form action="/" method="get" class="search-form">
+    <input type="text" name="search" placeholder="Buscar canciones..." value="{{ request.args.get('search', '') }}">
+    <button type="submit">Buscar</button>
+    <a href="/" class="btn">Reiniciar</a>
+</form>
+
+<audio id="player" controls autoplay>
+    <source id="audioSource" src="" type="audio/mpeg">
+</audio>
+
+<br>
+<button onclick="handlePreviousClick()">⏮️ Anterior</button>
+<button onclick="playPause()">⏯️ Reproducir/Pausa</button>
+<button onclick="handleNextClick()">⏭️ Siguiente</button>
+
+<br>
+<button onclick="toggleShuffle()">Modo Aleatorio: <span id='shuffleStatus'>Desactivado</span></button>
+<button onclick="toggleLoop()">Modo Bucle: <span id='loopStatus'>Desactivado</span></button>
+
+<form action="/upload" method="post" enctype="multipart/form-data">
+    <div class="file-input-container">
+        <label>Selecciona archivos para subir:</label><br>
+        <input type="file" name="file" multiple>
+        <button type="submit">Subir</button>
+    </div>
+</form>
+
+<h2>Lista de Canciones</h2>
+<ul>
+    {% for song in songs %}
+        <li><a href="javascript:void(0);" onclick="loadSong({{ loop.index0 }})">{{ song }}</a></li>
+    {% endfor %}
+</ul>
+
+<script>
+    let songs = {{ songs | tojson }};
+</script>
+<script src="{{ url_for('static', filename='player.js') }}"></script>
+
+</body>
+</html>
