@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subir Archivos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+<button class="logout" onclick="window.location.href='/logout'">Cerrar sesión</button>
+
+<h1>Subir canciones</h1>
+
+<form action="/upload" method="post" enctype="multipart/form-data">
+    <div class="file-input-container">
+        <label>Selecciona archivos para subir:</label><br>
+        <input type="file" name="file" multiple>
+        <button type="submit">Subir</button>
+    </div>
+</form>
+
+<a href="{{ url_for('music.index') }}" class="btn">Volver al índice</a>
+
+</body>
+</html>

@@ -1,15 +1,16 @@
-from werkzeug.security import generate_password_hash, check_password_hash
+import os
+import sys
+import time
+from sys import exit
+from getpass import getpass, _raw_input
+
 from colorama import Fore, Style, init
 from colorama.ansi import clear_screen
+from werkzeug.security import generate_password_hash, check_password_hash
 from mysql.connector import connect, Error, IntegrityError
-from getpass import getpass, _raw_input
-from sys import exit
-import sys
-import os
-import time
 
 # =========================
-# Añadimos la carpeta src al path para que pueda importar config
+# Añadimos la carpeta src al path para importar config
 # =========================
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from config import Config
@@ -22,12 +23,15 @@ DB_CONFIG = {
     "user": Config.DB_USER,
     "password": Config.DB_PASSWORD,
     "database": Config.DB_NAME,
-    "auth_plugin": "mysql_native_password"  # importante para compatibilidad
+    "auth_plugin": "mysql_native_password"
 }
 
 MAX_RETRIES = 10
 RETRY_DELAY = 3  # segundos
 
+# =========================
+# FUNCIONES UTILES
+# =========================
 def raw_input_(prompt):
     while True:
         try:
@@ -35,9 +39,6 @@ def raw_input_(prompt):
         except KeyboardInterrupt:
             print("\r")
 
-# =========================
-# CONEXIÓN MYSQL CON REINTENTOS
-# =========================
 def get_db_connection():
     for attempt in range(1, MAX_RETRIES + 1):
         try:
@@ -48,48 +49,45 @@ def get_db_connection():
             time.sleep(RETRY_DELAY)
     raise Exception("No se pudo conectar a la base de datos después de varios intentos")
 
-
 # =========================
-# CREAR TABLA
+# CREAR TABLAS DESDE script.sql
 # =========================
 def create_user_db():
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
-        cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            username VARCHAR(255) UNIQUE NOT NULL,
-            password VARCHAR(255) NOT NULL
-        )
-        """)
+        script_path = os.path.join(os.path.dirname(__file__), "script.sql")
+        with open(script_path, "r", encoding="utf-8") as f:
+            sql_script = f.read()
+
+        # Separar el script por ';' y ejecutar cada sentencia individualmente
+        statements = [s.strip() for s in sql_script.split(';') if s.strip()]
+        for statement in statements:
+            cursor.execute(statement)
+
+        print(Fore.GREEN + "Base de datos y tabla(s) creadas correctamente desde script.sql")
     finally:
         conn.commit()
         cursor.close()
         conn.close()
 
-
 # =========================
-# AÑADIR USUARIO
+# FUNCIONES DE USUARIOS
 # =========================
-def add_user(username, password):
+def add_user(username, password, role='user'):
     conn = get_db_connection()
     cursor = conn.cursor()
     hashed_password = generate_password_hash(password)
     try:
         cursor.execute(
-            "INSERT INTO users (username, password) VALUES (%s, %s)",
-            (username, hashed_password)
+            "INSERT INTO users (username, password, role) VALUES (%s, %s, %s)",
+            (username, hashed_password, role)
         )
     finally:
         conn.commit()
         cursor.close()
         conn.close()
 
-
-# =========================
-# VALIDAR USUARIO
-# =========================
 def validate_user(username, password):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -101,10 +99,6 @@ def validate_user(username, password):
         conn.close()
     return user and check_password_hash(user["password"], password)
 
-
-# =========================
-# MOSTRAR USUARIOS
-# =========================
 def show_users(print=print):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -116,41 +110,33 @@ def show_users(print=print):
         conn.close()
 
     if users:
-        print("\n" + Fore.GREEN + f"{'ID':<5}{'Username':<20}{'Password (Hash)'}")
+        print("\n" + Fore.GREEN + f"{'ID':<5}{'Username':<20}{'Role':<10}{'Password (Hash)'}")
         for user in users:
-            print(Fore.CYAN + f"{user['id']:<5}{user['username']:<20}{user['password']}")
+            print(Fore.CYAN + f"{user['id']:<5}{user['username']:<20}{user.get('role', 'user'):<10}{user['password']}")
     else:
-        print(Fore.RED + "No hay usuarios en la base de datos.")
-
-    print("\n")
+        print(Fore.RED + "No hay usuarios en la base de datos.\n")
     return users
 
-
-# =========================
-# CREAR USUARIO
-# =========================
-def create_user():
+def create_user(is_admin=False):
     while True:
         username = raw_input_(Fore.YELLOW + "Ingresa el nombre de usuario: ")
         password = getpass(Fore.YELLOW + "Ingresa la contraseña: ")
+        role = 'user'
+        if is_admin:
+            role_input = raw_input_(Fore.YELLOW + "¿Será admin? (s/n): ").lower()
+            if role_input == 's':
+                role = 'admin'
 
         try:
-            add_user(username, password)
-            print(Fore.GREEN + "\nUsuario creado exitosamente.\n")
+            add_user(username, password, role)
+            print(Fore.GREEN + f"\nUsuario '{username}' creado exitosamente con rol '{role}'.\n")
             break
         except IntegrityError:
             print(Fore.RED + "\nUsuario ya existente.\n")
 
-
-# =========================
-# ELIMINAR USUARIO
-# =========================
 def delete_user():
-    def print_nothing(*args, **kwargs): pass
-
-    show_users(print=print_nothing)
+    show_users(lambda *args, **kwargs: None)
     username = raw_input_(Fore.YELLOW + "Ingresa el nombre del usuario a eliminar: ")
-
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
@@ -164,51 +150,54 @@ def delete_user():
         cursor.close()
         conn.close()
 
-
-# =========================
-# CAMBIAR PASSWORD
-# =========================
 def change_password():
     username = raw_input_(Fore.YELLOW + "Ingresa el nombre del usuario: ")
     new_password = getpass(Fore.YELLOW + "Ingresa la nueva contraseña: ")
     hashed_password = generate_password_hash(new_password)
-
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
-        cursor.execute(
-            "UPDATE users SET password = %s WHERE username = %s",
-            (hashed_password, username)
-        )
+        cursor.execute("UPDATE users SET password = %s WHERE username = %s", (hashed_password, username))
     finally:
         conn.commit()
         cursor.close()
         conn.close()
-
     print(Fore.GREEN + f"\nContraseña del usuario {username} cambiada exitosamente.\n")
 
-
-# =========================
-# CAMBIAR USERNAME
-# =========================
 def change_username():
     old_username = raw_input_(Fore.YELLOW + "Ingresa el nombre actual: ")
     new_username = raw_input_(Fore.YELLOW + "Ingresa el nuevo nombre: ")
-
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
-        cursor.execute(
-            "UPDATE users SET username = %s WHERE username = %s",
-            (new_username, old_username)
-        )
+        cursor.execute("UPDATE users SET username = %s WHERE username = %s", (new_username, old_username))
     finally:
         conn.commit()
         cursor.close()
         conn.close()
-
     print(Fore.GREEN + f"\nNombre cambiado exitosamente.\n")
 
+def change_user_role():
+    show_users()
+    username = raw_input_(Fore.YELLOW + "Ingresa el nombre del usuario cuyo rol quieres cambiar: ")
+    new_role = raw_input_(Fore.YELLOW + "Ingresa el nuevo rol (user/admin): ").strip().lower()
+    if new_role not in ['user', 'admin']:
+        print(Fore.RED + "Rol no válido. Solo se permite 'user' o 'admin'.")
+        return
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("UPDATE users SET role = %s WHERE username = %s", (new_role, username))
+        if cursor.rowcount == 0:
+            print(Fore.RED + f"\nEl usuario {username} no existe.\n")
+            show_menu()
+            return
+        else:
+            print(Fore.GREEN + f"\nRol del usuario {username} actualizado a '{new_role}' exitosamente.\n")
+    finally:
+        conn.commit()
+        cursor.close()
+        conn.close()
 
 # =========================
 # MENÚ
@@ -221,8 +210,8 @@ def show_menu():
     print(Fore.CYAN + "3. Cambiar contraseña")
     print(Fore.CYAN + "4. Cambiar nombre")
     print(Fore.CYAN + "5. Ver usuarios")
-    print(Fore.RED + "6. Salir")
-
+    print(Fore.CYAN + "6. Modificar rol de usuario")
+    print(Fore.RED + "7. Salir")
 
 # =========================
 # MAIN
@@ -230,11 +219,12 @@ def show_menu():
 def main():
     create_user_db()
     options = [
-        create_user,
+        lambda: create_user(is_admin=True),
         delete_user,
         change_password,
         change_username,
-        show_users
+        show_users,
+        change_user_role
     ]
 
     print(clear_screen())
@@ -244,7 +234,7 @@ def main():
             choice = int(raw_input_(Fore.YELLOW + "Selecciona una opción: "))
             if 1 <= choice <= len(options):
                 options[choice - 1]()
-            elif choice == 6:
+            elif choice == 7:
                 print(Fore.RED + "\nSaliendo...\n")
                 exit(0)
             else:
@@ -253,7 +243,6 @@ def main():
             print(Fore.RED + "\nOpción no válida.\n")
         raw_input_("presione una tecla para continuar...")
         print(clear_screen())
-
 
 if __name__ == "__main__":
     init(autoreset=True)

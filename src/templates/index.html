@@ -7,7 +7,15 @@
 </head>
 <body>
 
-<button class="logout" onclick="window.location.href='/logout'">Cerrar sesión</button>
+<!-- Contenedor de botones fijos arriba -->
+<div class="top-buttons">
+    {% if session['user_id'] and session.get('role') == 'admin' %}
+        <button class="admin-panel" onclick="window.location.href='{{ url_for('admin.admin_panel') }}'">
+            Panel de Admin
+        </button>
+    {% endif %}
+    <button class="logout" onclick="window.location.href='/logout'">Cerrar sesión</button>
+</div>
 
 <h1>Bienvenido, {{ session['user_id'] }}</h1>
 <h2>Canción actual: <span id="currentSongTitle">{{ current_song }}</span></h2>
@@ -31,13 +39,7 @@
 <button onclick="toggleShuffle()">Modo Aleatorio: <span id='shuffleStatus'>Desactivado</span></button>
 <button onclick="toggleLoop()">Modo Bucle: <span id='loopStatus'>Desactivado</span></button>
 
-<form action="/upload" method="post" enctype="multipart/form-data">
-    <div class="file-input-container">
-        <label>Selecciona archivos para subir:</label><br>
-        <input type="file" name="file" multiple>
-        <button type="submit">Subir</button>
-    </div>
-</form>
+<a href="{{ url_for('upload.upload_file') }}" class="btn">Subir nuevas canciones</a>
 
 <h2>Lista de Canciones</h2>
 <ul>
