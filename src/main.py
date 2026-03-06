@@ -3,14 +3,18 @@ from config import Config
 from database.db import create_user_db
 from routes.auth_routes import auth_bp
 from routes.music_routes import music_bp
+from dotenv import load_dotenv
+import os
 
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+load_dotenv(dotenv_path)
 
 def create_app():
 
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    app.secret_key = Config.SECRET_KEY
+    app.secret_key = Config.SECRET_KEY or "test_12345"
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(music_bp)
@@ -19,9 +23,10 @@ def create_app():
 
 
 app = create_app()
+print("SECRET KEY = ", app.secret_key)
 
 if __name__ == "__main__":
 
     create_user_db()
 
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=8080)

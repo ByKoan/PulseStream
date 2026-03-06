@@ -4,18 +4,29 @@ from colorama.ansi import clear_screen
 from mysql.connector import connect, Error, IntegrityError
 from getpass import getpass, _raw_input
 from sys import exit
+import sys
+import os
+import time
 
 # =========================
-# CONFIG MYSQL (HARDCODEADO)
+# Añadimos la carpeta src al path para que pueda importar config
+# =========================
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from config import Config
+
+# =========================
+# CONFIG MYSQL (DESDE ENV)
 # =========================
 DB_CONFIG = {
-    "host": "localhost",   # si ejecutas fuera de docker
-    # "host": "db",        # si ejecutas dentro del container
-    "user": "root",
-    "password": "toor",
-    "database": "musicdb"
+    "host": Config.DB_HOST,
+    "user": Config.DB_USER,
+    "password": Config.DB_PASSWORD,
+    "database": Config.DB_NAME,
+    "auth_plugin": "mysql_native_password"  # importante para compatibilidad
 }
 
+MAX_RETRIES = 10
+RETRY_DELAY = 3  # segundos
 
 def raw_input_(prompt):
     while True:
@@ -24,12 +35,18 @@ def raw_input_(prompt):
         except KeyboardInterrupt:
             print("\r")
 
-
 # =========================
-# CONEXIÓN MYSQL
+# CONEXIÓN MYSQL CON REINTENTOS
 # =========================
 def get_db_connection():
-    return connect(**DB_CONFIG)
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            conn = connect(**DB_CONFIG)
+            return conn
+        except Error as e:
+            print(Fore.RED + f"Intento {attempt}/{MAX_RETRIES} fallido: {e}")
+            time.sleep(RETRY_DELAY)
+    raise Exception("No se pudo conectar a la base de datos después de varios intentos")
 
 
 # =========================
@@ -58,9 +75,7 @@ def create_user_db():
 def add_user(username, password):
     conn = get_db_connection()
     cursor = conn.cursor()
-
     hashed_password = generate_password_hash(password)
-
     try:
         cursor.execute(
             "INSERT INTO users (username, password) VALUES (%s, %s)",
@@ -78,17 +93,12 @@ def add_user(username, password):
 def validate_user(username, password):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-
     try:
-        cursor.execute(
-            "SELECT * FROM users WHERE username = %s",
-            (username,)
-        )
+        cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
         user = cursor.fetchone()
     finally:
         cursor.close()
         conn.close()
-
     return user and check_password_hash(user["password"], password)
 
 
@@ -98,7 +108,6 @@ def validate_user(username, password):
 def show_users(print=print):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-
     try:
         cursor.execute("SELECT * FROM users")
         users = cursor.fetchall()
@@ -144,18 +153,12 @@ def delete_user():
 
     conn = get_db_connection()
     cursor = conn.cursor()
-
     try:
-        cursor.execute(
-            "DELETE FROM users WHERE username = %s",
-            (username,)
-        )
-
+        cursor.execute("DELETE FROM users WHERE username = %s", (username,))
         if cursor.rowcount == 0:
             print(Fore.RED + f"\nEl usuario {username} no existe.\n")
         else:
             print(Fore.GREEN + f"\nUsuario {username} eliminado exitosamente.\n")
-
     finally:
         conn.commit()
         cursor.close()
@@ -168,12 +171,10 @@ def delete_user():
 def change_password():
     username = raw_input_(Fore.YELLOW + "Ingresa el nombre del usuario: ")
     new_password = getpass(Fore.YELLOW + "Ingresa la nueva contraseña: ")
-
     hashed_password = generate_password_hash(new_password)
 
     conn = get_db_connection()
     cursor = conn.cursor()
-
     try:
         cursor.execute(
             "UPDATE users SET password = %s WHERE username = %s",
@@ -196,7 +197,6 @@ def change_username():
 
     conn = get_db_connection()
     cursor = conn.cursor()
-
     try:
         cursor.execute(
             "UPDATE users SET username = %s WHERE username = %s",
@@ -229,7 +229,6 @@ def show_menu():
 # =========================
 def main():
     create_user_db()
-
     options = [
         create_user,
         delete_user,
@@ -239,13 +238,10 @@ def main():
     ]
 
     print(clear_screen())
-
     while True:
         show_menu()
-
         try:
             choice = int(raw_input_(Fore.YELLOW + "Selecciona una opción: "))
-
             if 1 <= choice <= len(options):
                 options[choice - 1]()
             elif choice == 6:
@@ -253,10 +249,8 @@ def main():
                 exit(0)
             else:
                 raise ValueError
-
         except ValueError:
             print(Fore.RED + "\nOpción no válida.\n")
-
         raw_input_("presione una tecla para continuar...")
         print(clear_screen())
 

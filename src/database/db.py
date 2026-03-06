@@ -1,13 +1,25 @@
 import mysql.connector
+import time
 from config import Config
 
-def get_db_connection():
-    return mysql.connector.connect(
-        host=Config.DB_HOST,
-        user=Config.DB_USER,
-        password=Config.DB_PASSWORD,
-        database=Config.DB_NAME
-    )
+import time
+import mysql.connector
+from mysql.connector import Error
+
+def get_db_connection(retries=10, delay=3):
+    for i in range(retries):
+        try:
+            conn = mysql.connector.connect(
+                host="db",
+                user="root",
+                password="root",
+                database="music_db"
+            )
+            return conn
+        except Error as e:
+            print(f"Intento {i+1}/{retries} fallido: {e}")
+            time.sleep(delay)
+    raise Exception("No se pudo conectar a la base de datos después de varios intentos")
 
 
 def create_user_db():

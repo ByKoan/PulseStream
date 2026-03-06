@@ -1,9 +1,10 @@
 -- Crear base de datos
-CREATE DATABASE IF NOT EXISTS musicdb
+DROP DATABASE music_db;
+CREATE DATABASE IF NOT EXISTS music_db
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci;
 
-USE musicdb;
+USE music_db;
 
 -- Tabla de usuarios
 CREATE TABLE IF NOT EXISTS users (
