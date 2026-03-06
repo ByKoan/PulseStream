@@ -1,89 +1,197 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Panel de Administración</title>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <style>
-        body { font-family: Arial, sans-serif; color: #fff; background: linear-gradient(to right, #1d2671, #c33764); margin:0; padding:20px; }
-        h1, h2 { text-align: center; }
-        .top-bar { display: flex; justify-content: space-between; margin-bottom: 20px; }
-        button { cursor:pointer; padding:8px 15px; border:none; border-radius:5px; margin:2px; }
-        button:hover { background-color:#333; }
-        table { width:100%; border-collapse:collapse; margin-top:10px; }
-        th, td { border:1px solid white; padding:10px; text-align:center; }
-        form { display:inline; }
-        select, input { padding:5px; margin:2px; border-radius:5px; border:none; }
-    </style>
+
 </head>
-<body>
 
-<div class="top-bar">
-    <a href="{{ url_for('music.index') }}"><button>Volver al reproductor</button></a>
-    <a href="{{ url_for('auth.logout') }}"><button>Cerrar sesión</button></a>
-</div>
+<body class="admin-body">
 
-<h1>Panel de Administración</h1>
-<h2>Bienvenido, {{ session['user_id'] }} ({{ session['role'] }})</h2>
+<div class="admin-container">
 
-<!-- Formulario para crear usuario -->
-<h2>Crear nuevo usuario</h2>
-<form action="{{ url_for('admin.admin_panel') }}" method="post">
-    <input type="hidden" name="action" value="create">
-    <input type="text" name="username" placeholder="Username" required>
-    <input type="password" name="password" placeholder="Contraseña" required>
-    <select name="role">
-        <option value="user">User</option>
-        <option value="admin">Admin</option>
-    </select>
-    <button type="submit">Crear usuario</button>
-</form>
+    <h1>Panel de Administración</h1>
 
-<h2>Buscar usuario</h2>
+    <a href="/" class="btn-back">Volver</a>
 
-<form method="GET" action="{{ url_for('admin.admin_panel') }}">
-    <input 
-        type="text" 
-        name="search" 
-        placeholder="Buscar por username..."
+
+    <!-- ========================= -->
+    <!-- CREAR USUARIO -->
+    <!-- ========================= -->
+
+    <h2>Crear usuario</h2>
+
+    <form method="POST" class="create-user">
+
+        <input
+            type="text"
+            name="username"
+            placeholder="Usuario"
+            required
+        >
+
+        <input
+            type="password"
+            name="password"
+            placeholder="Contraseña"
+            required
+        >
+
+        <select name="role">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+        </select>
+
+        <button type="submit">Crear</button>
+
+    </form>
+
+
+<!-- ========================= -->
+<!-- BUSCADOR -->
+<!-- ========================= -->
+
+<h2>Usuarios</h2>
+
+<form method="GET" class="search-form">
+    <input
+        type="text"
+        name="search"
+        placeholder="Buscar usuario..."
         value="{{ search }}"
     >
     <button type="submit">Buscar</button>
-
-    <a href="{{ url_for('admin.admin_panel') }}">
-        <button type="button">Reset</button>
-    </a>
 </form>
 
-<!-- Lista de usuarios -->
-<h2>Usuarios registrados</h2>
+<div class="users-table-container">
+
 <table>
-    <tr>
-        <th>ID</th>
-        <th>Username</th>
-        <th>Rol</th>
-        <th>Acciones</th>
-    </tr>
+
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Rol</th>
+            <th>Cambiar Rol</th>
+            <th>Eliminar</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
     {% for user in users %}
-    <tr>
-        <td>{{ user.id }}</td>
-        <td>{{ user.username }}</td>
-        <td>
-            <form action="{{ url_for('admin.change_role', username=user.username) }}" method="post">
-                <select name="role" onchange="this.form.submit()">
-                    <option value="user" {% if user.role=='user' %}selected{% endif %}>User</option>
-                    <option value="admin" {% if user.role=='admin' %}selected{% endif %}>Admin</option>
-                </select>
-            </form>
-        </td>
-        <td>
-            <form action="{{ url_for('admin.delete_user', user_id=user.id) }}" method="post" onsubmit="return confirm('¿Eliminar usuario {{ user.username }}?');">
-                <button type="submit">Eliminar</button>
-            </form>
-        </td>
-    </tr>
+
+        <tr>
+
+            <td>{{ user.id }}</td>
+
+            <td>{{ user.username }}</td>
+
+            <td>{{ user.role }}</td>
+
+            <td>
+
+                <form action="/admin/change_role/{{ user.username }}" method="POST">
+
+                    <select name="role">
+
+                        <option value="user" {% if user.role == "user" %}selected{% endif %}>
+                            User
+                        </option>
+
+                        <option value="admin" {% if user.role == "admin" %}selected{% endif %}>
+                            Admin
+                        </option>
+
+                    </select>
+
+                    <button type="submit">
+                        Actualizar
+                    </button>
+
+                </form>
+
+            </td>
+
+            <td>
+
+                <form action="/admin/delete/{{ user.id }}" method="POST">
+
+                    <button class="delete">
+                        Eliminar
+                    </button>
+
+                </form>
+
+            </td>
+
+        </tr>
+
     {% endfor %}
+
+    </tbody>
+
 </table>
 
+</div>
+
+<!-- ========================= -->
+<!-- RECURSOS DEL SISTEMA -->
+<!-- ========================= -->
+
+<h2>Recursos del sistema</h2>
+
+<div class="system-stats">
+
+    <div class="stat-box">
+        <h3>CPU</h3>
+        <canvas id="cpuChart"></canvas>
+        <p id="cpuText">{{ stats.cpu }}%</p>
+    </div>
+
+    <div class="stat-box">
+        <h3>RAM</h3>
+        <canvas id="ramChart"></canvas>
+        <p id="ramText">{{ stats.ram_percent }}%</p>
+    </div>
+
+    <div class="stat-box">
+        <h3>Disco</h3>
+        <canvas id="diskChart"></canvas>
+        <p id="diskText">{{ stats.disk_percent }}%</p>
+    </div>
+
+    <div class="stat-box">
+        <h3>Red - Subida</h3>
+        <canvas id="netUpChart"></canvas>
+        <p id="netUpText">0 MB/s</p>
+    </div>
+
+    <div class="stat-box">
+        <h3>Red - Bajada</h3>
+        <canvas id="netDownChart"></canvas>
+        <p id="netDownText">0 MB/s</p>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+window.systemStats = {
+    cpu: {{ stats.cpu }},
+    ram: {{ stats.ram_percent }},
+    disk: {{ stats.disk_percent }},
+    net_recv: {{ stats.net_recv }},
+    net_sent: {{ stats.net_sent }}
+};
+</script>
+
+<script src="{{ url_for('static', filename='player.js') }}"></script>
 </body>
 </html>

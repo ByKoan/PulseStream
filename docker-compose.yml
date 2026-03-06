@@ -17,6 +17,11 @@ services:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 3s
       retries: 20
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 1024M
 
   webserver:
     build: .
@@ -33,6 +38,11 @@ services:
       DB_NAME: music_db
     volumes:
       - ./src/music:/app/music
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 1024M
 
 volumes:
   mysql_data:
