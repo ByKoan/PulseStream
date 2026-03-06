@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from services.auth_service import validate_user
+from database.db import get_user_role
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -14,6 +15,7 @@ def login():
 
         if validate_user(username, password):
             session['user_id'] = username
+            session['role'] = get_user_role(username)
             return redirect(url_for('music.index'))
 
         return render_template("login.html", error="Credenciales incorrectas")

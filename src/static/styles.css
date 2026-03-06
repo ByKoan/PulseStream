@@ -47,6 +47,23 @@ button:hover, .btn:hover {
     background-color: #e43f3f;
 }
 
+.admin-panel {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background-color: greenyellow;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.admin-panel:hover {
+    background-color: #1d2671;
+}
+
 ul {
     list-style: none;
     padding: 0;
@@ -143,3 +160,26 @@ input[type="file"]::-webkit-file-upload-button {
 .login-container input[type="submit"]:hover {
     background-color: #333;
 }
+
+table {
+    width: 80%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    background-color: #000;
+    color: white;
+}
+
+table th, table td {
+    border: 1px solid #fff;
+    padding: 10px;
+    text-align: center;
+}
+
+table th {
+    background-color: #333;
+}
+
+table td form {
+    display: inline;
+}
+
