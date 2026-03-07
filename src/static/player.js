@@ -1,4 +1,3 @@
-// player.js
 document.addEventListener("DOMContentLoaded", () => {
 
     const player = document.getElementById("player");
@@ -17,14 +16,15 @@ document.addEventListener("DOMContentLoaded", () => {
         else currentSongIndex = index;
 
         audioSource.src = "/play/" + encodeURIComponent(songs[currentSongIndex]);
-
         player.load();
         player.play();
 
         currentSongTitle.textContent = songs[currentSongIndex];
         document.title = songs[currentSongIndex];
 
-        // Media Session API
+        // =========================
+        // Media Session API (iOS + Android)
+        // =========================
         if ('mediaSession' in navigator) {
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: songs[currentSongIndex],
@@ -34,6 +34,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     { src: "https://via.placeholder.com/96", sizes: "96x96", type: "image/png" }
                 ]
             });
+
+            // Eliminamos los botones de 10s y usamos flechas
+            navigator.mediaSession.setActionHandler('play', () => player.play());
+            navigator.mediaSession.setActionHandler('pause', () => player.pause());
+            navigator.mediaSession.setActionHandler('previoustrack', () => handlePreviousClick());
+            navigator.mediaSession.setActionHandler('nexttrack', () => handleNextClick());
+            navigator.mediaSession.setActionHandler('seekbackward', null);
+            navigator.mediaSession.setActionHandler('seekforward', null);
+            navigator.mediaSession.setActionHandler('seekto', null);
+            navigator.mediaSession.setActionHandler('stop', null);
         }
     }
 
@@ -113,11 +123,9 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        // Inicializamos gráficos
         const cpuChart = createChart("cpuChart", window.systemStats.cpu, "#ff6384");
         const ramChart = createChart("ramChart", window.systemStats.ram_percent, "#36a2eb");
         const diskChart = createChart("diskChart", window.systemStats.disk_percent, "#ffce56");
-
         const netUpChart = createChart("netUpChart", 0, "#4bc0c0");
         const netDownChart = createChart("netDownChart", 0, "#ff9f40");
 
@@ -132,9 +140,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 const res = await fetch("/admin/system_stats");
                 const data = await res.json();
 
-                // ======================
-                // Actualizar gráficas
-                // ======================
                 cpuChart.data.datasets[0].data[0] = data.cpu;
                 cpuChart.data.datasets[0].data[1] = 100 - data.cpu;
                 cpuChart.update();
@@ -161,14 +166,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 netDownChart.data.datasets[0].data[1] = 100 - netDownChart.data.datasets[0].data[0];
                 netDownChart.update();
 
-                // ======================
-                // Actualizar valores en HTML
-                // ======================
+                netUpText.textContent = `${upload} MB/s`;
+                netDownText.textContent = `${download} MB/s`;
+
                 document.getElementById("cpuText").textContent = `${data.cpu}%`;
                 document.getElementById("ramText").textContent = `${data.ram_used} / ${data.ram_total} GB (${data.ram_percent}%)`;
                 document.getElementById("diskText").textContent = `${data.disk_used} / ${data.disk_total} GB (${data.disk_percent}%)`;
-                netUpText.textContent = `${upload} MB/s`;
-                netDownText.textContent = `${download} MB/s`;
 
             } catch (err) {
                 console.error("Error al actualizar stats:", err);
@@ -179,7 +182,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function updateServerStats(){
-
         const res = await fetch("/admin/server_stats")
         const data = await res.json()
 
@@ -187,9 +189,8 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("activeUsers").textContent = data.active_users
         document.getElementById("totalSongs").textContent = data.total_songs
     }
-    
 
-setInterval(updateServerStats, 5000)
+    setInterval(updateServerStats, 5000)
 
     // ===============================
     // Reproducción final y mediaSession
@@ -201,13 +202,6 @@ setInterval(updateServerStats, 5000)
         }
         handleNextClick();
     });
-
-    if ("mediaSession" in navigator) {
-        navigator.mediaSession.setActionHandler("play", () => player.play());
-        navigator.mediaSession.setActionHandler("pause", () => player.pause());
-        navigator.mediaSession.setActionHandler("previoustrack", () => handlePreviousClick());
-        navigator.mediaSession.setActionHandler("nexttrack", () => handleNextClick());
-    }
 
     // Exponer funciones al HTML
     window.loadSong = loadSong;
