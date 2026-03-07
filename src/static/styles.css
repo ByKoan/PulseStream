@@ -226,3 +226,7 @@ table td form {
     margin-bottom:10px;
 }
 
+.big-stat{
+    font-size:40px;
+    font-weight:bold;
+}

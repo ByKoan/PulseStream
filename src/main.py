@@ -16,6 +16,8 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
+    create_user_db()
+
     app.secret_key = Config.SECRET_KEY or "test_12345"
 
     app.register_blueprint(auth_bp)
@@ -30,7 +32,5 @@ app = create_app()
 print("SECRET KEY = ", app.secret_key)
 
 if __name__ == "__main__":
-
-    create_user_db()
 
     app.run(host="0.0.0.0", port=8080)

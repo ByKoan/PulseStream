@@ -14,7 +14,9 @@ def login():
         password = request.form.get('password', '').strip()
 
         if validate_user(username, password):
-            session['user_id'] = username
+            # Guardamos username en sesión para usarlo al subir canciones
+            session['user_id'] = username 
+            session['username'] = username 
             session['role'] = get_user_role(username)
             return redirect(url_for('music.index'))
 
@@ -27,4 +29,6 @@ def login():
 def logout():
 
     session.pop('user_id', None)
+    session.pop('username', None) 
+    session.pop('role', None)
     return redirect(url_for('auth.login'))

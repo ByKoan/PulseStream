@@ -73,6 +73,44 @@ def admin_panel():
 
     users = cursor.fetchall()
 
+    # =========================
+    # Stats del servidor
+    # =========================
+
+    cursor.execute("SELECT COUNT(*) AS total_users FROM users")
+    total_users = cursor.fetchone()["total_users"]
+
+    cursor.execute("SELECT COUNT(*) AS total_songs FROM songs")
+    total_songs = cursor.fetchone()["total_songs"]
+
+    cursor.execute("SELECT SUM(plays) AS total_plays FROM songs")
+    result = cursor.fetchone()
+    total_plays = result["total_plays"] or 0
+
+    cursor.execute("""
+    SELECT title, plays
+    FROM songs
+    ORDER BY plays DESC
+    LIMIT 1
+    """)
+    top_song = cursor.fetchone()
+
+    cursor.execute("""
+    SELECT username, total_songs AS total
+    FROM users
+    ORDER BY total_songs DESC
+    LIMIT 1
+    """)
+    top_user = cursor.fetchone()
+
+    server_stats = {
+        "total_users": total_users,
+        "total_songs": total_songs,
+        "total_plays": total_plays,
+        "top_song": top_song,
+        "top_user": top_user
+    }
+
     cursor.close()
     conn.close()
 
@@ -100,7 +138,8 @@ def admin_panel():
         "admin_panel.html",
         users=users,
         search=search,
-        stats=stats
+        stats=stats,
+        server_stats=server_stats
     )
 
 
@@ -156,11 +195,12 @@ def delete_user(user_id):
 
 
 # =========================
-# API para stats en tiempo real
+# API stats sistema
 # =========================
 @admin_bp.route("/admin/system_stats")
 @admin_required
 def system_stats():
+
     cpu = psutil.cpu_percent(interval=0.5)
     ram = psutil.virtual_memory()
     disk = psutil.disk_usage("/")

@@ -180,6 +180,53 @@
 
 </div>
 
+<h2>Estadísticas del servidor</h2>
+
+<div class="system-stats">
+
+    <div class="stat-box">
+        <h3>Usuarios</h3>
+        <p class="big-stat">{{ server_stats.total_users }}</p>
+    </div>
+
+    <div class="stat-box">
+        <h3>Canciones</h3>
+        <p class="big-stat">{{ server_stats.total_songs }}</p>
+    </div>
+
+    <div class="stat-box">
+        <h3>Reproducciones</h3>
+        <p class="big-stat">{{ server_stats.total_plays }}</p>
+    </div>
+
+    <div class="stat-box">
+        <h3>Top canción</h3>
+        <p>
+        {% if server_stats.top_song %}
+            {{ server_stats.top_song.title }}
+            <br>
+            ({{ server_stats.top_song.plays }} plays)
+        {% else %}
+            Sin datos
+        {% endif %}
+        </p>
+    </div>
+
+    <div class="stat-box">
+        <h3>Top uploader</h3>
+        <p>
+        {% if server_stats.top_user %}
+            {{ server_stats.top_user.username }}
+            <br>
+            ({{ server_stats.top_user.total }} canciones)
+        {% else %}
+            Sin datos
+        {% endif %}
+        </p>
+    </div>
+
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>

@@ -178,6 +178,19 @@ document.addEventListener("DOMContentLoaded", () => {
         setInterval(updateSystemStats, 1000);
     }
 
+    async function updateServerStats(){
+
+        const res = await fetch("/admin/server_stats")
+        const data = await res.json()
+
+        document.getElementById("totalUsers").textContent = data.total_users
+        document.getElementById("activeUsers").textContent = data.active_users
+        document.getElementById("totalSongs").textContent = data.total_songs
+    }
+    
+
+setInterval(updateServerStats, 5000)
+
     // ===============================
     // Reproducción final y mediaSession
     // ===============================
