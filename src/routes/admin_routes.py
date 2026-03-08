@@ -1,12 +1,18 @@
 import functools
 import psutil
+from datetime import datetime, timedelta
 
 from flask import Blueprint, session, redirect, url_for, render_template, request, flash, jsonify
 from database.db import get_user_role, get_db_connection
 from resources.manage_database_script import add_user
 from mysql.connector import IntegrityError
 
-admin_bp = Blueprint("admin", __name__, template_folder="../templates")
+admin_bp = Blueprint(
+    "admin",
+    __name__,
+    template_folder="../templates",
+    url_prefix="/admin"   
+)
 
 
 # =========================
@@ -33,7 +39,7 @@ def admin_required(f):
 # =========================
 # Panel admin
 # =========================
-@admin_bp.route("/admin/", methods=["GET", "POST"])
+@admin_bp.route("/", methods=["GET", "POST"])
 @admin_required
 def admin_panel():
 
@@ -65,11 +71,11 @@ def admin_panel():
 
     if search:
         cursor.execute(
-            "SELECT id, username, role FROM users WHERE username LIKE %s",
+            "SELECT id, username, role, banned_until FROM users WHERE username LIKE %s",
             ("%" + search + "%",)
         )
     else:
-        cursor.execute("SELECT id, username, role FROM users")
+        cursor.execute("SELECT id, username, role, banned_until FROM users")
 
     users = cursor.fetchall()
 
@@ -146,7 +152,7 @@ def admin_panel():
 # =========================
 # Cambiar rol
 # =========================
-@admin_bp.route("/admin/change_role/<username>", methods=["POST"])
+@admin_bp.route("/change_role/<username>", methods=["POST"])
 @admin_required
 def change_role(username):
 
@@ -174,7 +180,7 @@ def change_role(username):
 # =========================
 # Eliminar usuario
 # =========================
-@admin_bp.route("/admin/delete/<int:user_id>", methods=["POST"])
+@admin_bp.route("/delete/<int:user_id>", methods=["POST"])
 @admin_required
 def delete_user(user_id):
 
@@ -193,11 +199,62 @@ def delete_user(user_id):
 
     return redirect(url_for("admin.admin_panel"))
 
+# =========================
+# Banear usuario por tiempo limitado
+# =========================
+
+@admin_bp.route("/ban_user", methods=["POST"])
+@admin_required
+def ban_user():
+
+    username = request.form.get("username")
+    hours = int(request.form.get("hours"))
+
+    banned_until = datetime.now() + timedelta(hours=hours)
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "UPDATE users SET banned_until = %s WHERE username = %s",
+        (banned_until, username)
+    )
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for("admin.admin_panel"))
+
+# =========================
+# Desbanear usuario
+# =========================
+
+@admin_bp.route("/unban_user", methods=["POST"])
+@admin_required
+def unban_user():
+
+    username = request.form.get("username")
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "UPDATE users SET banned_until = NULL WHERE username = %s",
+        (username,)
+    )
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for("admin.admin_panel"))
+
 
 # =========================
 # API stats sistema
 # =========================
-@admin_bp.route("/admin/system_stats")
+@admin_bp.route("/system_stats")
 @admin_required
 def system_stats():
 

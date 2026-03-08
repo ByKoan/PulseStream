@@ -230,3 +230,27 @@ table td form {
     font-size:40px;
     font-weight:bold;
 }
+
+.ban{
+    background-color:#ff9800;
+}
+
+.ban:hover{
+    background-color:#e68900;
+}
+
+.unban{
+    background-color:#4caf50;
+}
+
+.unban:hover{
+    background-color:#3d8b40;
+}
+
+.delete{
+    background-color:#ff4c4c;
+}
+
+.delete:hover{
+    background-color:#e43f3f;
+}

@@ -73,13 +73,16 @@
 <table>
 
     <thead>
-        <tr>
-            <th>ID</th>
-            <th>Username</th>
-            <th>Rol</th>
-            <th>Cambiar Rol</th>
-            <th>Eliminar</th>
-        </tr>
+    <tr>
+        <th>ID</th>
+        <th>Username</th>
+        <th>Rol</th>
+        <th>Baneado hasta</th>
+        <th>Banear</th>
+        <th>Desbanear</th>
+        <th>Cambiar Rol</th>
+        <th>Eliminar</th>
+    </tr>
     </thead>
 
     <tbody>
@@ -93,6 +96,58 @@
             <td>{{ user.username }}</td>
 
             <td>{{ user.role }}</td>
+
+            <td>
+                {% if user.banned_until %}
+                    {{ user.banned_until.strftime("%d/%m/%Y %H:%M") }}
+                {% else %}
+                    No
+                {% endif %}
+            </td>
+
+            <td>
+
+                <form action="/admin/ban_user" method="POST">
+
+                    <input
+                        type="hidden"
+                        name="username"
+                        value="{{ user.username }}"
+                    >
+
+                    <input
+                        type="number"
+                        name="hours"
+                        placeholder="Horas"
+                        min="1"
+                        style="width:70px"
+                    >
+
+                    <button class="ban">
+                        Ban
+                    </button>
+
+                </form>
+
+            </td>
+
+            <td>
+
+                <form action="/admin/unban_user" method="POST">
+
+                    <input
+                        type="hidden"
+                        name="username"
+                        value="{{ user.username }}"
+                    >
+
+                    <button class="unban">
+                        Unban
+                    </button>
+
+                </form>
+
+            </td>
 
             <td>
 
