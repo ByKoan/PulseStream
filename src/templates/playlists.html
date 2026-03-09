@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Playlists</title>
+      <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+   </head>
+   <body>
+      <h1>Mis Playlists</h1>
+      <a href="/">Volver</a>
+      <h2>Crear nueva playlist</h2>
+      <form action="/create_playlist" method="POST">
+         <input type="text" name="name" placeholder="Nombre de la playlist" required>
+         <button type="submit">Crear</button>
+      </form>
+      <h2>Tus playlists</h2>
+         <ul>
+         {% for playlist in playlists %}
+         <li>
+            <a href="/playlist/{{ playlist.id }}">
+               {{ playlist.name }}
+            </a>
+         </li>
+         {% endfor %}
+         </ul>
+   </body>
+</html>

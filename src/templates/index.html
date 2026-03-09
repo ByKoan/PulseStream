@@ -40,6 +40,7 @@
 <button onclick="toggleLoop()">Modo Bucle: <span id='loopStatus'>Desactivado</span></button>
 
 <a href="{{ url_for('upload.upload_file') }}" class="btn">Subir nuevas canciones</a>
+<a href="/playlists" class="btn">Playlists</a>
 
 <ul id="songList">
 {% for song in songs %}

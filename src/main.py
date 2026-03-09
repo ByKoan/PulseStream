@@ -5,6 +5,7 @@ from routes.auth_routes import auth_bp
 from routes.music_routes import music_bp
 from routes.upload_routes import upload_bp
 from routes.admin_routes import admin_bp
+from routes.playlist_routes import playlist_bp
 from resources.sync_music_db import sync_music_database
 from dotenv import load_dotenv
 import os
@@ -26,9 +27,9 @@ def create_app():
     app.register_blueprint(music_bp)
     app.register_blueprint(upload_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(playlist_bp)
 
     return app
-
 
 app = create_app()
 print("SECRET KEY = ", app.secret_key)

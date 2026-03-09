@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ playlist.name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+<!-- Botones superiores -->
+<div class="top-buttons">
+    <button class="logout" onclick="window.location.href='/logout'">Cerrar sesión</button>
+</div>
+
+<h1>Playlist: {{ playlist.name }}</h1>
+<a href="/playlists" class="btn">Volver a playlists</a>
+<a href="/" class="btn">Volver a Home</a>
+
+<br>
+<h2>Canción actual: <span id="currentSongTitle"></span></h2>
+
+<!-- Buscador -->
+<form action="#" method="get" class="search-form" onsubmit="filterSongs(event)">
+    <input type="text" id="searchInput" placeholder="Buscar canciones...">
+    <button type="submit">Buscar</button>
+    <button type="button" onclick="resetFilter()">Reiniciar</button>
+</form>
+
+<audio id="player" controls autoplay>
+    <source id="audioSource" src="" type="audio/mpeg">
+</audio>
+
+<br>
+<button onclick="handlePreviousClick()">Anterior</button>
+<button onclick="playPause()">Reproducir/Pausa</button>
+<button onclick="handleNextClick()">Siguiente</button>
+
+<br>
+<button onclick="toggleShuffle()">Modo Aleatorio: <span id='shuffleStatus'>Desactivado</span></button>
+<button onclick="toggleLoop()">Modo Bucle: <span id='loopStatus'>Desactivado</span></button>
+
+<h2>Canciones</h2>
+<ul id="songList">
+    {% for song in songs %}
+    <li class="song-item" data-filename="{{ song }}">
+        <span class="song-title" onclick="loadSong({{ loop.index0 }})">{{ song }}</span>
+    </li>
+    {% endfor %}
+</ul>
+
+<script>
+    let songs = {{ songs | tojson }};
+    let filteredSongs = [...songs];
+
+    function filterSongs(event) {
+        event.preventDefault();
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        filteredSongs = songs.filter(s => s.toLowerCase().includes(query));
+        renderSongList();
+    }
+
+    function resetFilter() {
+        filteredSongs = [...songs];
+        document.getElementById('searchInput').value = '';
+        renderSongList();
+    }
+
+    function renderSongList() {
+        const ul = document.getElementById('songList');
+        ul.innerHTML = '';
+        filteredSongs.forEach((song, index) => {
+            const li = document.createElement('li');
+            li.className = 'song-item';
+            li.dataset.filename = song;
+            li.innerHTML = `<span class="song-title" onclick="loadSong(${index})">${song}</span>`;
+            ul.appendChild(li);
+        });
+    }
+</script>
+
+<script src="{{ url_for('static', filename='player.js') }}"></script>
+</body>
+</html>

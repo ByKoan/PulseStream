@@ -216,11 +216,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if (data.success) {
 
-                    // eliminar del DOM
                     const songItem = btn.closest(".song-item");
                     if (songItem) songItem.remove();
 
-                    // eliminar del array del reproductor
                     songs = songs.filter(song => song !== filename);
 
                     alert(`"${filename}" borrada correctamente`);
@@ -236,6 +234,27 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
     });
+
+    async function loadPlaylist(playlistId) {
+        try {
+            const res = await fetch(`/playlist/${playlistId}`);
+            const data = await res.json();
+
+            if (res.status === 404) {
+                alert(data.error);
+                window.location.href = "/create_playlist";
+                return;
+            }
+
+            songs = data.songs;
+            currentSongIndex = 0;
+            loadSong(currentSongIndex);
+
+        } catch (err) {
+            console.error("Error al cargar la playlist:", err);
+            alert("Error al cargar la playlist.");
+        }
+    }
 
     setInterval(updateServerStats, 5000)
 
