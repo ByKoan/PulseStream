@@ -1,8 +1,8 @@
 # MusicCloudServer_TFG
 
->`Project version: 2.0.1`  (This value will be updated on every funcionality change in the project)
+>`Project version: 2.2`  (This value will be updated on every funcionality change in the project)
 
-> ***About this version: In the last version, I Fixed funcionalitys to play the songs. Features/Bugs to add/fix: need to add funcionality for adding songs to the playlist., and a funcionality to remove songs from a playlist, need to add funcionality to remove playlists***
+> ***About this version: In the last version, I added the funcionality to add songs to playlists. Features/Bugs to add/fix: need to add funcionality to remove songs from a playlist, need to add funcionality to remove playlists***
 
 
 > This project is under license. Please check the LICENSE file for legal information. Feel free to use the program, but be aware of the license policy, as any type of commercial use is explicitly prohibited. It is delivered without warranty, and any changes, modifications, or integrations will be the property of the original author. The author of this project is not responsible for any problems the software may cause, and any changes or modifications to the project must include the original author's name and do not necessarily require notification.

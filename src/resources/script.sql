@@ -27,14 +27,14 @@ CREATE TABLE IF NOT EXISTS songs (
     FOREIGN KEY (uploaded_by) REFERENCES users(username) ON DELETE CASCADE
 );
 
-CREATE TABLE playlists (
+CREATE TABLE IF NOT EXISTS playlists (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     user_id VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE playlist_songs (
+CREATE TABLE IF NOT EXISTS playlist_songs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     playlist_id INT,
     song_filename VARCHAR(255),

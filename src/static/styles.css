@@ -322,3 +322,16 @@ table td form {
 .action-buttons .mode-controls .playback-controls a {
     margin: 0px; 
 }
+
+.add-to-playlist {
+    display: inline-block;
+    position: relative;
+}
+
+.add-to-playlist select {
+    margin-left: 5px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    border: none;
+    font-size: 0.9em;
+}

@@ -54,7 +54,19 @@
     <li class="song-item" data-filename="{{ song }}">
         <span class="song-title" onclick="loadSong({{ loop.index0 }})">{{ song }}</span>
         <div class="song-actions">
+            <!-- Botón Borrar -->
             <button class="delete-song-btn" data-filename="{{ song }}">Borrar</button>
+
+            <!-- Botón Añadir a Playlist -->
+            <div class="add-to-playlist">
+                <button class="add-btn">+</button>
+                <select class="playlist-select" style="display:none;">
+                    <option value="" selected disabled>Seleccionar playlist</option>
+                    {% for playlist in playlists %}
+                        <option value="{{ playlist.id }}">{{ playlist.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
     </li>
 {% endfor %}

@@ -65,7 +65,7 @@ def view_playlist(playlist_id):
         playlist = cursor.fetchone()
 
         if not playlist:
-            return redirect(url_for("playlist.playlists"))  
+            return redirect(url_for("playlist.playlists"))
 
         cursor.execute("""
             SELECT song_filename 

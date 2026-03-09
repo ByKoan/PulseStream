@@ -10,20 +10,27 @@ from config import Config
 music_bp = Blueprint("music", __name__)
 
 
-@music_bp.route('/')
+@music_bp.route("/")
 def index():
-    if 'user_id' not in session:
-        return redirect(url_for('auth.login'))
+    if "user_id" not in session:
+        return redirect(url_for("auth.login"))
 
-    songs = get_user_songs(session['user_id'])
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
 
-    query = request.args.get('search', '').strip()
-    if query:
-        songs = get_user_songs(session['user_id'], query)
+    # Obtener canciones
+    cursor.execute("SELECT filename FROM songs")
+    songs = [row['filename'] for row in cursor.fetchall()]
 
-    current_song = songs[0] if songs else "No hay canciones"
+    # Obtener playlists del usuario
+    cursor.execute("SELECT id, name FROM playlists WHERE user_id = %s", (session["user_id"],))
+    playlists = cursor.fetchall()
 
-    return render_template("index.html", songs=songs, current_song=current_song)
+    cursor.close()
+    conn.close()
+
+    # Pasar playlists a la plantilla
+    return render_template("index.html", songs=songs, current_song="", playlists=playlists)
 
 
 @music_bp.route('/play/<filename>')

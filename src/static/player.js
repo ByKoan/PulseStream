@@ -260,19 +260,43 @@ document.addEventListener("DOMContentLoaded", () => {
     // REPRODUCIR CANCIÓN POR NOMBRE (para búsquedas)
     // ===============================
     function playSongByName(name) {
-    const index = songs.findIndex(s => s.toLowerCase() === name.toLowerCase());
-    if (index !== -1) {
-        loadSong(index);
-    } else {
-        console.warn("Canción no encontrada:", name);
+        const index = songs.findIndex(s => s.toLowerCase() === name.toLowerCase());
+        if (index !== -1) {
+            loadSong(index);
+        } else {
+            console.warn("Canción no encontrada:", name);
+        }
     }
-}
+
+    async function addToPlaylist(filename, playlistId) {
+        try {
+            const res = await fetch("/add_to_playlist", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ filename, playlist_id: playlistId })
+            });
+
+            const text = await res.text();
+            console.log("Respuesta servidor:", text);
+
+            const data = JSON.parse(text);
+
+            if (data.success) {
+                alert(`"${filename}" añadida a la playlist`);
+            } else {
+                alert(`Error: ${data.error}`);
+            }
+
+        } catch (err) {
+            alert("Error al añadir la canción: " + err);
+        }
+    }
 
     // ===============================
     // Funcionalidades html playlist
     // ===============================
 
-        const searchForm = document.getElementById("searchForm");
+    const searchForm = document.getElementById("searchForm");
     const searchInput = document.getElementById("searchInput");
     const songList = document.getElementById("songList");
     const resetSearch = document.getElementById("resetSearch");
@@ -292,6 +316,65 @@ document.addEventListener("DOMContentLoaded", () => {
         if (firstVisible) {
             playSongByName(firstVisible.textContent);
         }
+    });
+
+    // ===============================
+    // AÑADIR CANCIONES A PLAYLIST
+    // ===============================
+    document.querySelectorAll(".add-to-playlist").forEach(container => {
+
+        const addBtn = container.querySelector(".add-btn");
+        const select = container.querySelector(".playlist-select");
+
+        addBtn.addEventListener("click", (e) => {
+
+            e.stopPropagation();
+
+            const isOpen = select.style.display === "inline-block";
+
+            document.querySelectorAll(".playlist-select").forEach(s => {
+                s.style.display = "none";
+            });
+
+            if (!isOpen) {
+                select.style.display = "inline-block";
+            }
+        });
+
+        // evitar que el select cierre el dropdown al hacer click
+        select.addEventListener("click", (e) => {
+            e.stopPropagation();
+        });
+
+        select.addEventListener("change", async () => {
+
+            const playlistId = select.value;
+            if (!playlistId) return;
+
+            const songItem = container.closest(".song-item");
+            const filename = songItem.dataset.filename;
+
+            await addToPlaylist(filename, playlistId);
+
+            select.style.display = "none";
+            select.selectedIndex = 0;
+        });
+
+    });
+
+    // cerrar dropdown si se hace click fuera
+    document.addEventListener("click", () => {
+        document.querySelectorAll(".playlist-select").forEach(s => {
+            s.style.display = "none";
+        });
+    });
+
+
+    // cerrar si haces click fuera
+    document.addEventListener("click", () => {
+        document.querySelectorAll(".playlist-select").forEach(s => {
+            s.style.display = "none";
+        });
     });
 
     resetSearch.addEventListener("click", () => {
@@ -328,5 +411,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Cargar primera canción automáticamente
     loadSong(0);
-
 });
