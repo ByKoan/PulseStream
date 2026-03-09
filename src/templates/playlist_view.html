@@ -44,6 +44,7 @@
     {% for song in songs %}
     <li class="song-item" data-filename="{{ song }}">
         <span class="song-title" onclick="playSongByName('{{ song }}')">{{ song }}</span>
+        <button class="remove-from-playlist" data-filename="{{ song }}" data-playlist="{{ playlist.id }}">Quitar</button>
     </li>
     {% endfor %}
 </ul>

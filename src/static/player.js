@@ -341,7 +341,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        // evitar que el select cierre el dropdown al hacer click
         select.addEventListener("click", (e) => {
             e.stopPropagation();
         });
@@ -362,15 +361,62 @@ document.addEventListener("DOMContentLoaded", () => {
 
     });
 
-    // cerrar dropdown si se hace click fuera
     document.addEventListener("click", () => {
         document.querySelectorAll(".playlist-select").forEach(s => {
             s.style.display = "none";
         });
     });
 
+    // ===============================
+    // QUITAR CANCIONES DE PLAYLIST
+    // ===============================
 
-    // cerrar si haces click fuera
+    document.querySelectorAll(".remove-from-playlist").forEach(btn => {
+
+        btn.addEventListener("click", async () => {
+
+            const filename = btn.dataset.filename
+            const playlistId = btn.dataset.playlist
+
+            if(!confirm(`Quitar "${filename}" de la playlist?`)) return
+
+            try {
+
+                const res = await fetch("/remove_from_playlist", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        filename: filename,
+                        playlist_id: playlistId
+                    })
+                })
+
+                const data = await res.json()
+
+                if(data.success){
+
+                    const songItem = btn.closest(".song-item")
+                    songItem.remove();
+                    location.reload();
+
+                } else {
+
+                    alert(data.error)
+
+                }
+
+            } catch(err){
+
+                alert("Error: " + err)
+
+            }
+
+        })
+
+    })
+
     document.addEventListener("click", () => {
         document.querySelectorAll(".playlist-select").forEach(s => {
             s.style.display = "none";
@@ -382,8 +428,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const items = songList.querySelectorAll(".song-item");
         items.forEach(item => item.style.display = "");
     });
-
-    // ======================================
 
     // Exponer la función al HTML
     window.playSongByName = playSongByName;

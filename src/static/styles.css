@@ -335,3 +335,7 @@ table td form {
     border: none;
     font-size: 0.9em;
 }
+
+.remove-from-playlist {
+    background-color: #ff1a1a;
+}

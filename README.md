@@ -1,6 +1,6 @@
 # MusicCloudServer_TFG
 
->`Project version: 2.2`  (This value will be updated on every funcionality change in the project)
+>`Project version: 2.3`  (This value will be updated on every funcionality change in the project)
 
 > ***About this version: In the last version, I added the funcionality to add songs to playlists. Features/Bugs to add/fix: need to add funcionality to remove songs from a playlist, need to add funcionality to remove playlists***
 
