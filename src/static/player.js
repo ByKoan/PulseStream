@@ -256,6 +256,55 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // ===============================
+    // REPRODUCIR CANCIÓN POR NOMBRE (para búsquedas)
+    // ===============================
+    function playSongByName(name) {
+    const index = songs.findIndex(s => s.toLowerCase() === name.toLowerCase());
+    if (index !== -1) {
+        loadSong(index);
+    } else {
+        console.warn("Canción no encontrada:", name);
+    }
+}
+
+    // ===============================
+    // Funcionalidades html playlist
+    // ===============================
+
+        const searchForm = document.getElementById("searchForm");
+    const searchInput = document.getElementById("searchInput");
+    const songList = document.getElementById("songList");
+    const resetSearch = document.getElementById("resetSearch");
+
+    searchForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const query = searchInput.value.toLowerCase();
+        const items = songList.querySelectorAll(".song-item");
+
+        items.forEach(item => {
+            const title = item.querySelector(".song-title").textContent.toLowerCase();
+            item.style.display = title.includes(query) ? "" : "none";
+        });
+
+        // Reproducir la primera canción visible si hay coincidencias
+        const firstVisible = songList.querySelector(".song-item:not([style*='display: none']) .song-title");
+        if (firstVisible) {
+            playSongByName(firstVisible.textContent);
+        }
+    });
+
+    resetSearch.addEventListener("click", () => {
+        searchInput.value = "";
+        const items = songList.querySelectorAll(".song-item");
+        items.forEach(item => item.style.display = "");
+    });
+
+    // ======================================
+
+    // Exponer la función al HTML
+    window.playSongByName = playSongByName;
+
     setInterval(updateServerStats, 5000)
 
     // ===============================

@@ -20,10 +20,10 @@
 <h1>Bienvenido, {{ session['user_id'] }}</h1>
 <h2>Canción actual: <span id="currentSongTitle">{{ current_song }}</span></h2>
 
-<form action="/" method="get" class="search-form">
-    <input type="text" name="search" placeholder="Buscar canciones..." value="{{ request.args.get('search', '') }}">
+<form id="searchForm" action="/" method="get" class="search-form">
+    <input type="text" id="searchInput" name="search" placeholder="Buscar canciones..." value="{{ request.args.get('search', '') }}">
     <button type="submit">Buscar</button>
-    <a href="/" class="btn">Reiniciar</a>
+    <button type="button" id="resetSearch" class="btn">Reiniciar</button>
 </form>
 
 <audio id="player" controls autoplay>
@@ -31,16 +31,23 @@
 </audio>
 
 <br>
-<button onclick="handlePreviousClick()">Anterior</button>
-<button onclick="playPause()">Reproducir/Pausa</button>
-<button onclick="handleNextClick()">Siguiente</button>
+<div class="playback-controls">
+    <button onclick="handlePreviousClick()">Anterior</button>
+    <button onclick="playPause()">Reproducir/Pausa</button>
+    <button onclick="handleNextClick()">Siguiente</button>
+</div>
 
 <br>
-<button onclick="toggleShuffle()">Modo Aleatorio: <span id='shuffleStatus'>Desactivado</span></button>
-<button onclick="toggleLoop()">Modo Bucle: <span id='loopStatus'>Desactivado</span></button>
+<div class="mode-controls">
+    <button onclick="toggleShuffle()">Modo Aleatorio: <span id='shuffleStatus'>Desactivado</span></button>
+    <button onclick="toggleLoop()">Modo Bucle: <span id='loopStatus'>Desactivado</span></button>
+</div>
 
-<a href="{{ url_for('upload.upload_file') }}" class="btn">Subir nuevas canciones</a>
-<a href="/playlists" class="btn">Playlists</a>
+<br>
+<div class="action-buttons">
+    <a href="{{ url_for('upload.upload_file') }}" class="btn">Subir nuevas canciones</a>
+    <a href="/playlists" class="btn">Playlists</a>
+</div>
 
 <ul id="songList">
 {% for song in songs %}
@@ -54,7 +61,13 @@
 </ul>
 
 <script>
-    let songs = {{ songs | tojson }};
+let songs = {{ songs | tojson }};
+let currentSongIndex = 0;
+
+if (songs.length > 0 && "{{ current_song }}" !== "") {
+    const idx = songs.findIndex(s => s === "{{ current_song }}");
+    if (idx !== -1) currentSongIndex = idx;
+}
 </script>
 <script src="{{ url_for('static', filename='player.js') }}"></script>
 

@@ -19,11 +19,11 @@
 <br>
 <h2>Canción actual: <span id="currentSongTitle"></span></h2>
 
-<!-- Buscador -->
-<form action="#" method="get" class="search-form" onsubmit="filterSongs(event)">
+<!-- Buscador funcional -->
+<form id="searchForm" class="search-form">
     <input type="text" id="searchInput" placeholder="Buscar canciones...">
     <button type="submit">Buscar</button>
-    <button type="button" onclick="resetFilter()">Reiniciar</button>
+    <button type="button" id="resetSearch">Reiniciar</button>
 </form>
 
 <audio id="player" controls autoplay>
@@ -43,41 +43,16 @@
 <ul id="songList">
     {% for song in songs %}
     <li class="song-item" data-filename="{{ song }}">
-        <span class="song-title" onclick="loadSong({{ loop.index0 }})">{{ song }}</span>
+        <span class="song-title" onclick="playSongByName('{{ song }}')">{{ song }}</span>
     </li>
     {% endfor %}
 </ul>
 
 <script>
     let songs = {{ songs | tojson }};
-    let filteredSongs = [...songs];
-
-    function filterSongs(event) {
-        event.preventDefault();
-        const query = document.getElementById('searchInput').value.toLowerCase();
-        filteredSongs = songs.filter(s => s.toLowerCase().includes(query));
-        renderSongList();
-    }
-
-    function resetFilter() {
-        filteredSongs = [...songs];
-        document.getElementById('searchInput').value = '';
-        renderSongList();
-    }
-
-    function renderSongList() {
-        const ul = document.getElementById('songList');
-        ul.innerHTML = '';
-        filteredSongs.forEach((song, index) => {
-            const li = document.createElement('li');
-            li.className = 'song-item';
-            li.dataset.filename = song;
-            li.innerHTML = `<span class="song-title" onclick="loadSong(${index})">${song}</span>`;
-            ul.appendChild(li);
-        });
-    }
 </script>
 
 <script src="{{ url_for('static', filename='player.js') }}"></script>
+
 </body>
 </html>

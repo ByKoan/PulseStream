@@ -314,3 +314,11 @@ table td form {
     width:45%;
     min-width:400px;
 }
+
+.playback-controls, .mode-controls, .action-buttons {
+    margin: 0px 0;
+}
+
+.action-buttons .mode-controls .playback-controls a {
+    margin: 0px; 
+}
