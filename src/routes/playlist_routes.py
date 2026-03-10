@@ -68,11 +68,12 @@ def view_playlist(playlist_id):
             return redirect(url_for("playlist.playlists"))
 
         cursor.execute("""
-            SELECT song_filename 
-            FROM playlist_songs
-            WHERE playlist_id = %s
+            SELECT s.filename 
+            FROM playlist_songs ps
+            JOIN songs s ON ps.song_id = s.id
+            WHERE ps.playlist_id = %s
         """, (playlist_id,))
-        songs = [row['song_filename'] for row in cursor.fetchall()]
+        songs = [row['filename'] for row in cursor.fetchall()]
 
     finally:
         cursor.close()
