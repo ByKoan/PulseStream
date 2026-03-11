@@ -22,6 +22,7 @@ def remove_from_playlist():
 
     try:
 
+        # Verificar que la playlist pertenece al usuario
         cursor.execute(
             "SELECT id FROM playlists WHERE id=%s AND user_id=%s",
             (playlist_id, session["user_id"])
@@ -29,10 +30,26 @@ def remove_from_playlist():
 
         if not cursor.fetchone():
             return jsonify({"success": False, "error": "Playlist no encontrada"}), 404
-        
+
+
+        # Obtener el song_id usando el filename
         cursor.execute(
-            "DELETE FROM playlist_songs WHERE playlist_id=%s AND song_filename=%s",
-            (playlist_id, filename)
+            "SELECT id FROM songs WHERE filename=%s",
+            (filename,)
+        )
+
+        song = cursor.fetchone()
+
+        if not song:
+            return jsonify({"success": False, "error": "Canción no encontrada"}), 404
+
+        song_id = song["id"]
+
+
+        # Eliminar de playlist
+        cursor.execute(
+            "DELETE FROM playlist_songs WHERE playlist_id=%s AND song_id=%s",
+            (playlist_id, song_id)
         )
 
         conn.commit()

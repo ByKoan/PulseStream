@@ -1,8 +1,8 @@
 # MusicCloudServer_TFG
 
->`Project version: 2.3.1`  (This value will be updated on every funcionality change in the project)
+>`Project version: 2.3.2`  (This value will be updated on every funcionality change in the project)
 
-> ***About this version: In the last version, I fixed bugs: While deleting a user his playlist and his songs in playlist keeps in database, fixed bug in upload too. Features/Bugs to add/fix: need to add funcionality to remove songs from a playlist, need to add funcionality to remove playlists***
+> ***About this version: In the last version, Fixed bugs, reduced the number of lines in the JS and added funcionality to change the password in admin panel . Features/Bugs to add/fix: need to fix ban field (inline field) and update rol (inline field) need to add funcionality to remove playlists***
 
 
 > This project is under license. Please check the LICENSE file for legal information. Feel free to use the program, but be aware of the license policy, as any type of commercial use is explicitly prohibited. It is delivered without warranty, and any changes, modifications, or integrations will be the property of the original author. The author of this project is not responsible for any problems the software may cause, and any changes or modifications to the project must include the original author's name and do not necessarily require notification.

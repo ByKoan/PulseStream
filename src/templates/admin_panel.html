@@ -81,6 +81,7 @@
         <th>Banear</th>
         <th>Desbanear</th>
         <th>Cambiar Rol</th>
+        <th>Cambiar contraseña</th>
         <th>Eliminar</th>
     </tr>
     </thead>
@@ -169,6 +170,25 @@
                         Actualizar
                     </button>
 
+                </form>
+
+            </td>
+
+            <td>
+
+                <form action="/admin/change_password/{{ user.username }}" method="POST" class="password-form">
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="Nueva contraseña"
+                        class="password-input"
+                        style="display:none;"
+                        required
+                    >
+
+                    <button type="button" class="change-password-btn">
+                        Cambiar
+                    </button>
                 </form>
 
             </td>

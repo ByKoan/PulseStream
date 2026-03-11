@@ -339,3 +339,14 @@ table td form {
 .remove-from-playlist {
     background-color: #ff1a1a;
 }
+
+.password-input {
+    display: none;
+    margin-bottom: 5px;
+    padding: 4px;
+    width: 150px;
+}
+.change-password-btn {
+    cursor: pointer;
+    background-color: #1d2671;
+}

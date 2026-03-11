@@ -1,6 +1,7 @@
 import functools
 import psutil
 from datetime import datetime, timedelta
+from werkzeug.security import generate_password_hash
 
 from flask import Blueprint, session, redirect, url_for, render_template, request, flash, jsonify
 from database.db import get_user_role, get_db_connection
@@ -250,6 +251,39 @@ def unban_user():
 
     return redirect(url_for("admin.admin_panel"))
 
+# =========================
+# Cambiar contraseña
+# =========================
+@admin_bp.route("/change_password/<username>", methods=["POST"])
+@admin_required
+def change_password(username):
+
+    new_password = request.form.get("password")
+
+    if not new_password:
+        flash("Contraseña inválida", "error")
+        return redirect(url_for("admin.admin_panel"))
+
+    from werkzeug.security import generate_password_hash
+    hashed_password = generate_password_hash(new_password)
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute(
+            "UPDATE users SET password=%s WHERE username=%s",
+            (hashed_password, username)
+        )
+
+    finally:
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+    flash(f"Contraseña de {username} actualizada", "success")
+
+    return redirect(url_for("admin.admin_panel"))
 
 # =========================
 # API stats sistema
