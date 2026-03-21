@@ -394,6 +394,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ===============================
+    // IMPORT PLAYLIST YT
+    // ===============================
+
+    async function importYT() {
+        const url = document.getElementById("yt-url").value;
+
+        const res = await fetch("/import_youtube_playlist", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({url})
+        });
+
+        const data = await res.json();
+
+        alert(JSON.stringify(data));
+    }
+
+    // ===============================
     // EXPORT FUNCTIONS
     // ===============================
     window.loadSong = loadSong;
@@ -402,6 +420,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.handlePreviousClick = handlePreviousClick;
     window.toggleShuffle = toggleShuffle;
     window.toggleLoop = toggleLoop;
+    window.importYT = importYT;
 
     window.playSongByName = name => {
         const index = getSongs().findIndex(s => s.toLowerCase() === name.toLowerCase());

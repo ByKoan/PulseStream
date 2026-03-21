@@ -13,6 +13,10 @@
          <input type="text" name="name" placeholder="Nombre de la playlist" required>
          <button type="submit">Crear</button>
       </form>
+      <h2>Importar playlist de YouTube</h2>
+
+      <input type="text" id="yt-url" placeholder="URL playlist YouTube">
+      <button onclick="importYT()">Importar</button>
          <ul>
          {% for playlist in playlists %}
          <li class="playlist-item" data-playlist="{{ playlist.id }}">
