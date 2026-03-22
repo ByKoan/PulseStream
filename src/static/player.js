@@ -35,6 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (currentSongTitle) currentSongTitle.textContent = song;
         document.title = song;
 
+        // Media Session API
         if ("mediaSession" in navigator) {
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: song,
@@ -42,7 +43,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 album: "MusicCloudServer",
                 artwork: [{ src: "https://via.placeholder.com/96", sizes: "96x96", type: "image/png" }]
             });
-
             navigator.mediaSession.setActionHandler("play", () => player.play());
             navigator.mediaSession.setActionHandler("pause", () => player.pause());
             navigator.mediaSession.setActionHandler("nexttrack", handleNextClick);
@@ -64,14 +64,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (shuffle) {
             let i;
-            do {
-                i = Math.floor(Math.random() * songs.length);
-            } while (i === currentSongIndex && songs.length > 1);
+            do { i = Math.floor(Math.random() * songs.length); } 
+            while (i === currentSongIndex && songs.length > 1);
             currentSongIndex = i;
         } else {
             currentSongIndex = (currentSongIndex + 1) % songs.length;
         }
-
         loadSong(currentSongIndex);
     }
 
@@ -79,22 +77,17 @@ document.addEventListener("DOMContentLoaded", () => {
         const songs = getSongs();
         if (!songs.length || !player) return;
 
-        if (player.currentTime > 3) {
-            player.currentTime = 0;
-            return;
-        }
+        if (player.currentTime > 3) { player.currentTime = 0; return; }
 
         if (shuffle) {
             let i;
-            do {
-                i = Math.floor(Math.random() * songs.length);
-            } while (i === currentSongIndex && songs.length > 1);
+            do { i = Math.floor(Math.random() * songs.length); } 
+            while (i === currentSongIndex && songs.length > 1);
             currentSongIndex = i;
         } else {
             currentSongIndex--;
             if (currentSongIndex < 0) currentSongIndex = songs.length - 1;
         }
-
         loadSong(currentSongIndex);
     }
 
@@ -123,13 +116,10 @@ document.addEventListener("DOMContentLoaded", () => {
         searchForm.addEventListener("submit", e => {
             e.preventDefault();
             const query = searchInput.value.toLowerCase();
-            const items = songList.querySelectorAll(".song-item");
-            items.forEach(item => {
+            songList.querySelectorAll(".song-item").forEach(item => {
                 const title = item.querySelector(".song-title")?.textContent.toLowerCase() || "";
                 item.style.display = title.includes(query) ? "" : "none";
             });
-            const firstVisible = songList.querySelector(".song-item:not([style*='display: none']) .song-title");
-            if (firstVisible) window.playSongByName(firstVisible.textContent);
         });
     }
 
@@ -141,7 +131,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ===============================
-    // PLAYLIST ADD
+    // CLICK SONG
+    // ===============================
+    if (songList) {
+        songList.addEventListener("click", e => {
+            const titleEl = e.target.closest(".song-title");
+            if (!titleEl) return;
+            const index = Array.from(songList.children).indexOf(titleEl.closest(".song-item"));
+            if (index !== -1) loadSong(index);
+        });
+    }
+
+    // ===============================
+    // ADD TO PLAYLIST
     // ===============================
     document.querySelectorAll(".add-to-playlist").forEach(container => {
         const addBtn = container.querySelector(".add-btn");
@@ -152,7 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
             e.stopPropagation();
             const isOpen = select.style.display === "inline-block";
             document.querySelectorAll(".playlist-select").forEach(s => s.style.display = "none");
-            if (!isOpen) select.style.display = "inline-block";
+            select.style.display = isOpen ? "none" : "inline-block";
         });
 
         select.addEventListener("click", e => e.stopPropagation());
@@ -167,7 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
                 const res = await fetch("/add_to_playlist", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({ filename, playlist_id: playlistId })
                 });
                 const data = await res.json();
@@ -200,7 +202,7 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
                 const res = await fetch("/delete_song", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({ filename })
                 });
                 const data = await res.json();
@@ -212,203 +214,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     alert(`Error: ${data.error}`);
                 }
             } catch (err) {
-                alert(`Error al borrar la canción: ${err}`);
+                alert("Error al borrar la canción: " + err);
             }
         });
-    }
-
-    // ===============================
-    // BAN INLINE
-    // ===============================
-    document.querySelectorAll(".ban").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const form = btn.closest("form");
-            const input = form?.querySelector(".ban-hours-input");
-            if (!input) return;
-
-            if (input.style.display === "none") {
-                input.style.display = "inline-block";
-                input.focus();
-            } else {
-                if (!input.value || Number(input.value) <= 0) {
-                    alert("Introduce un número válido de horas");
-                    input.focus();
-                    return;
-                }
-                form.submit();
-            }
-        });
-    });
-
-    // ===============================
-    // CHANGE PASSWORD INLINE
-    // ===============================
-    document.addEventListener("click", e => {
-        if (!e.target.classList.contains("change-password-btn")) return;
-        const form = e.target.closest("form");
-        const input = form?.querySelector(".password-input");
-        if (!input) return;
-
-        if (!input.style.display || input.style.display === "none") {
-            input.style.display = "inline-block";
-            input.focus();
-        } else {
-            if (!input.value.trim()) {
-                alert("Introduce una contraseña válida");
-                input.focus();
-                return;
-            }
-            form.submit();
-        }
-    });
-
-    // ===============================
-    // SELECT ROLE INLINE
-    // ===============================
-    document.querySelectorAll(".role-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const form = btn.closest(".role-form");
-            const select = form?.querySelector(".role-select");
-            if (!select) return;
-
-            if (!select.style.display || select.style.display === "none") {
-                select.style.display = "inline-block";
-                select.focus();
-            } else {
-                if (!select.value) {
-                    alert("Selecciona un rol válido");
-                    select.focus();
-                    return;
-                }
-                form.submit();
-            }
-        });
-    });
-
-    document.querySelectorAll(".role-select").forEach(select => {
-        select.addEventListener("click", e => e.stopPropagation());
-    });
-
-    // ===============================
-    // RENOMBRAR PLAYLIST INLINE
-    // ===============================
-    document.querySelectorAll(".rename-playlist-btn").forEach(btn => {
-        btn.addEventListener("click", async () => {
-            const li = btn.closest(".playlist-item");
-            const input = li?.querySelector(".rename-input");
-            const nameEl = li?.querySelector(".playlist-name");
-            const playlistId = btn.dataset.playlist;
-            if (!input || !nameEl) return;
-
-            if (input.style.display === "none") {
-                input.value = nameEl.textContent;
-                input.style.display = "inline-block";
-                input.focus();
-                return;
-            }
-
-            const newName = input.value.trim();
-            if (!newName) {
-                alert("Nombre inválido");
-                return;
-            }
-
-            try {
-                const res = await fetch("/rename_playlist", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ playlist_id: playlistId, name: newName })
-                });
-                const data = await res.json();
-                if (data.success) location.reload();
-                else alert(data.error);
-            } catch (err) {
-                alert("Error: " + err);
-            }
-        });
-    });
-
-    // ===============================
-    // SYSTEM STATS CHARTS
-    // ===============================
-    if (window.systemStats) {
-        const createChart = (id, value, color) => new Chart(document.getElementById(id), {
-            type: "doughnut",
-            data: { datasets: [{ data: [value, 100 - value], backgroundColor: [color, "#333"] }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-        });
-
-        const cpuChart = createChart("cpuChart", window.systemStats.cpu, "#ff6384");
-        const ramChart = createChart("ramChart", window.systemStats.ram_percent, "#36a2eb");
-        const diskChart = createChart("diskChart", window.systemStats.disk_percent, "#ffce56");
-        const netUpChart = createChart("netUpChart", 0, "#4bc0c0");
-        const netDownChart = createChart("netDownChart", 0, "#ff9f40");
-
-        let lastSent = window.systemStats.net_sent;
-        let lastRecv = window.systemStats.net_recv;
-
-        const netUpText = document.getElementById("netUpText");
-        const netDownText = document.getElementById("netDownText");
-
-        async function updateSystemStats() {
-            try {
-                const res = await fetch("/admin/system_stats");
-                const data = await res.json();
-
-                cpuChart.data.datasets[0].data[0] = data.cpu;
-                cpuChart.data.datasets[0].data[1] = 100 - data.cpu;
-                cpuChart.update();
-
-                ramChart.data.datasets[0].data[0] = data.ram_percent;
-                ramChart.data.datasets[0].data[1] = 100 - data.ram_percent;
-                ramChart.update();
-
-                diskChart.data.datasets[0].data[0] = data.disk_percent;
-                diskChart.data.datasets[0].data[1] = 100 - data.disk_percent;
-                diskChart.update();
-
-                const upload = ((data.net_sent - lastSent) / 1024 / 1024).toFixed(2);
-                const download = ((data.net_recv - lastRecv) / 1024 / 1024).toFixed(2);
-                lastSent = data.net_sent;
-                lastRecv = data.net_recv;
-
-                netUpChart.data.datasets[0].data[0] = Math.min(upload * 5, 100);
-                netUpChart.data.datasets[0].data[1] = 100 - netUpChart.data.datasets[0].data[0];
-                netUpChart.update();
-
-                netDownChart.data.datasets[0].data[0] = Math.min(download * 5, 100);
-                netDownChart.data.datasets[0].data[1] = 100 - netDownChart.data.datasets[0].data[0];
-                netDownChart.update();
-
-                if (netUpText) netUpText.textContent = `${upload} MB/s`;
-                if (netDownText) netDownText.textContent = `${download} MB/s`;
-
-                if (document.getElementById("cpuText")) document.getElementById("cpuText").textContent = `${data.cpu}%`;
-                if (document.getElementById("ramText")) document.getElementById("ramText").textContent = `${data.ram_used} / ${data.ram_total} GB (${data.ram_percent}%)`;
-                if (document.getElementById("diskText")) document.getElementById("diskText").textContent = `${data.disk_used} / ${data.disk_total} GB (${data.disk_percent}%)`;
-
-            } catch (err) { console.error("Error al actualizar stats:", err); }
-        }
-
-        setInterval(updateSystemStats, 1000);
-    }
-
-    // ===============================
-    // IMPORT PLAYLIST YT
-    // ===============================
-
-    async function importYT() {
-        const url = document.getElementById("yt-url").value;
-
-        const res = await fetch("/import_youtube_playlist", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({url})
-        });
-
-        const data = await res.json();
-
-        alert(JSON.stringify(data));
     }
 
     // ===============================
@@ -420,12 +228,6 @@ document.addEventListener("DOMContentLoaded", () => {
     window.handlePreviousClick = handlePreviousClick;
     window.toggleShuffle = toggleShuffle;
     window.toggleLoop = toggleLoop;
-    window.importYT = importYT;
-
-    window.playSongByName = name => {
-        const index = getSongs().findIndex(s => s.toLowerCase() === name.toLowerCase());
-        if (index !== -1) loadSong(index);
-    };
 
     // ===============================
     // INITIAL LOAD
