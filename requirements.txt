@@ -5,3 +5,6 @@ dotenv
 colorama
 psutil
 yt_dlp
+# Uncomment this if you wanna get the visualizer
+#PyQt6 
+#PyQt6-WebEngine
