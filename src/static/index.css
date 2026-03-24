@@ -1,0 +1,159 @@
+/* ===== BASE ===== */
+
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to right, #1d2671, #c33764);
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+    margin: 0;
+}
+
+h1 {
+    font-size: 40px;
+    margin-bottom: 20px;
+}
+
+/* ===== BOTONES GENERALES ===== */
+
+button,
+.btn,
+a {
+    background-color: #000;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+    margin: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+button:hover,
+.btn:hover {
+    background-color: #333;
+}
+
+/* ===== BOTONES SUPERIORES ===== */
+
+.top-buttons {
+    position: relative;
+    width: 100%;
+}
+
+.logout {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: #ff4c4c;
+}
+
+.logout:hover {
+    background-color: #e43f3f;
+}
+
+.admin-panel {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background-color: greenyellow;
+    color: black;
+}
+
+.admin-panel:hover {
+    background-color: #1d2671;
+    color: white;
+}
+
+/* ===== PLAYER ===== */
+
+audio {
+    margin: 20px auto;
+    display: block;
+    width: 80%;
+    max-width: 600px;
+}
+
+/* ===== FORM BUSCADOR ===== */
+
+.search-form {
+    margin-bottom: 20px;
+}
+
+.search-form input[type="text"] {
+    padding: 8px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: none;
+}
+
+/* ===== CONTROLES ===== */
+
+.playback-controls,
+.mode-controls,
+.action-buttons {
+    margin: 10px 0;
+}
+
+/* ===== LISTA DE CANCIONES ===== */
+
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 20px auto;
+    max-width: 600px;
+}
+
+.song-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    margin: 5px;
+    background-color: #000;
+    border-radius: 8px;
+    text-align: left;
+    transition: background 0.2s;
+}
+
+.song-item:hover {
+    background-color: #333;
+}
+
+.song-title {
+    cursor: pointer;
+    flex-grow: 1;
+}
+
+/* ===== ACCIONES DE CANCIÓN ===== */
+
+.song-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.delete-song-btn {
+    background-color: #ff4c4c;
+    padding: 5px 10px;
+    font-size: 0.9em;
+}
+
+.delete-song-btn:hover {
+    background-color: #e43f3f;
+}
+
+/* ===== PLAYLIST ===== */
+
+.add-to-playlist {
+    display: inline-block;
+    position: relative;
+}
+
+.add-to-playlist select {
+    margin-left: 5px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    border: none;
+    font-size: 0.9em;
+}
