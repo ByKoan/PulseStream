@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Music Cloud</title>
@@ -11,7 +11,8 @@
     {% if error %}
         <p class="error">{{ error }}</p>
     {% endif %}
-    <form method="post" action="/login">
+
+    <form method="post" action="{{ url_for('auth.login') }}" id="loginForm">
         <label for="username">Usuario:</label>
         <input type="text" id="username" name="username" autocomplete="username" required
                oninput="this.value = this.value.toLowerCase()" placeholder="username">
@@ -21,10 +22,11 @@
 
         <div class="button-group">
             <input type="submit" value="Login" class="btn">
-            <a href="/register" class="btn">Register</a>
+            <button type="button" class="btn" id="registerBtn" data-url="{{ url_for('auth.register') }}">Register</button>
         </div>
     </form>
 </div>
 
+<script src="{{ url_for('static', filename='login.js') }}"></script>
 </body>
 </html>
