@@ -28,16 +28,18 @@ a {
     color: white;
     padding: 10px 20px;
     font-size: 16px;
-    margin: 10px;
+    margin: 6px;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 6px;
     text-decoration: none;
+    transition: all 0.25s ease;
 }
 
 button:hover,
 .btn:hover,
 a:hover {
     background-color: #333;
+    transform: translateY(-1px);
 }
 
 /* ===== BOTÓN LOGOUT ===== */
@@ -59,11 +61,43 @@ a:hover {
 
 /* ===== PLAYER ===== */
 
-audio {
-    margin: 20px auto;
-    display: block;
-    width: 80%;
-    max-width: 600px;
+.player-section {
+    max-width: 850px;
+    margin: 25px auto;
+}
+
+/* fila principal: botones + audio */
+.playback-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px; /* mismo gap que botones generales */
+    flex-wrap: wrap;
+}
+
+/* audio integrado */
+.playback-controls audio {
+    flex: 1;
+    max-width: 550px;
+    margin: 0 6px; /* espacio lateral igual a botones */
+}
+
+/* botones de reproducción: anterior, play, siguiente */
+.nav-btn {
+    padding: 10px 20px;
+    margin: 6px;
+    font-size: 16px;
+    border-radius: 6px;
+    background-color: #000;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.nav-btn:hover {
+    background-color: #333;
+    transform: translateY(-1px);
 }
 
 /* ===== BUSCADOR ===== */
@@ -97,11 +131,12 @@ ul {
     background-color: #000;
     border-radius: 8px;
     text-align: left;
-    transition: background 0.2s;
+    transition: background 0.2s, transform 0.2s;
 }
 
 .song-item:hover {
     background-color: #333;
+    transform: scale(1.01);
 }
 
 .song-title {
@@ -136,13 +171,12 @@ ul {
     z-index: 1000;
 }
 
-/* Contenedor del menú para poder posicionar dropdown relativo */
+/* Contenedor del menú para dropdown */
 .menu-container {
     position: relative;
 }
 
 /* BOTONES DEL NAVBAR */
-
 .menu-toggle {
     background-color: greenyellow;
     color: black;
@@ -162,87 +196,26 @@ ul {
 }
 
 /* =========================
-   DROPDOWN MENU
+   DROPDOWN MENU HORIZONTAL
 ========================= */
 
 .dropdown-menu {
-    position: absolute; /* relativo al .menu-container */
-    top: 50px;          /* justo debajo del botón Menu */
-    left: 0;
-    background: #000;
-    border-radius: 40px;
-    padding: 10px;
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s, transform 0.3s;
-    transform: translateY(-10px);
-    z-index: 2000; /* sobre todo */
-}
-
-/* Contenedor del navbar */
-.navbar {
-    position: fixed;
+    position: absolute;
     top: 0;
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    box-sizing: border-box;
-    z-index: 1000;
-}
-
-/* Contenedor del botón Menu */
-.menu-container {
-    position: relative;
-}
-
-/* BOTONES DEL NAVBAR */
-.menu-toggle {
-    background-color: greenyellow;
-    color: black;
-}
-
-.menu-toggle:hover {
-    background-color: #1d2671;
-    color: white;
-}
-
-.logout {
-    background-color: #ff4c4c;
-}
-
-.logout:hover {
-    background-color: #e43f3f;
-}
-
-/* =========================
-   DROPDOWN MENU - HORIZONTAL
-========================= */
-
-.dropdown-menu {
-    position: absolute;      /* relativo al .menu-container */
-    top: 0;                  /* alineado al botón */
-    left: 100%;              /* justo a la derecha del botón */
+    left: 100%;
     background: #000;
     border-radius: 40px;
     padding: 10px 15px;
-    display: flex;           /* fila horizontal */
-    flex-direction: row;     /* botones en fila */
-    flex-wrap: nowrap;       /* NO se envuelvan */
-    gap: 10px;               /* espacio entre botones */
-    white-space: nowrap;     /* evita saltos de línea */
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 10px;
+    white-space: nowrap;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s, transform 0.3s;
-    transform: translateX(-10px);  /* animación suave desde la izquierda */
-    z-index: 2000;           /* sobre todo */
+    transform: translateX(-10px);
+    z-index: 2000;
 }
 
 .dropdown-menu.show {
@@ -256,7 +229,7 @@ ul {
     color: black;
     border-radius: 30px;
     padding: 10px 25px;
-    flex-shrink: 0;          /* evita que los botones se reduzcan */
+    flex-shrink: 0;
 }
 
 .dropdown-menu button:hover {
@@ -265,4 +238,56 @@ ul {
 
 .dropdown-menu .active {
     background: #8cff00;
+}
+
+/* =========================
+   TOGGLE BUTTONS (INDEX STYLE)
+========================= */
+
+.player-toggles {
+    display: flex;
+    justify-content: center;
+    gap: 15px; /* espacio mínimo */
+    margin-top: 10px; /* pegado al audio */
+}
+
+.toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    user-select: none;
+}
+
+/* switch base */
+.toggle {
+    width: 55px;
+    height: 28px;
+    background: #444;
+    border-radius: 20px;
+    position: relative;
+    transition: background 0.25s ease;
+}
+
+/* bolita del toggle */
+.toggle::after {
+    content: "";
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    background: white;
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.25s ease;
+}
+
+/* activo con gradiente */
+.toggle.active {
+    background: linear-gradient(135deg, #1d2671, #c33764);
+}
+
+.toggle.active::after {
+    transform: translateX(27px);
 }

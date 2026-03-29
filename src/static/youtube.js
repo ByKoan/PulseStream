@@ -6,8 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const player = document.getElementById("youtube-player");
     const nowPlaying = document.getElementById("now-playing");
 
-    const loopBtn = document.getElementById("youtube-loop-btn");
-    const loopStatus = document.getElementById("loopSongStatus");
+    const loopToggle = document.getElementById("youtubeLoopToggle");
+    const loopContainer = document.getElementById("youtubeLoopToggleContainer");
 
     const songList = document.getElementById("songList");
 
@@ -35,13 +35,18 @@ document.addEventListener("DOMContentLoaded", () => {
     // ===============================
     // LOOP
     // ===============================
-    function toggleLoop() {
+    function toggleLoopUI() {
+
         loopSong = !loopSong;
-        if (loopStatus)
-            loopStatus.textContent = loopSong ? "Activado" : "Desactivado";
+
+        if (loopToggle) {
+            loopToggle.classList.toggle("active", loopSong);
+        }
     }
 
-    if (loopBtn) loopBtn.addEventListener("click", toggleLoop);
+    if (loopContainer) {
+        loopContainer.addEventListener("click", toggleLoopUI);
+    }
 
     if (player) {
         player.addEventListener("ended", () => {

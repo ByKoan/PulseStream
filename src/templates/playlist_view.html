@@ -53,31 +53,43 @@
 
 <h2>Canción actual: <span id="currentSongTitle"></span></h2>
 
+<div class="playback-controls">
+
+    <button class="nav-btn" onclick="handlePreviousClick()">
+        Anterior
+    </button>
+
+    <audio id="player" controls autoplay>
+        <source id="audioSource" src="" type="audio/mpeg">
+    </audio>
+
+    <button class="nav-btn" onclick="handleNextClick()">
+        Siguiente 
+    </button>
+
+</div>
+
 <form id="searchForm" class="search-form">
     <input type="text" id="searchInput" placeholder="Buscar canciones...">
     <button type="submit">Buscar</button>
     <button type="button" id="resetSearch">Reiniciar</button>
 </form>
 
-<audio id="player" controls autoplay>
-    <source id="audioSource" src="" type="audio/mpeg">
-</audio>
+<div class="player-toggles">
 
-<br>
+    <!-- SHUFFLE -->
+    <div id="shuffleToggleContainer" class="toggle-container">
+        <div id="shuffleToggle" class="toggle"></div>
+        <span>Shuffle</span>
+    </div>
 
-<button onclick="handlePreviousClick()">Anterior</button>
-<button onclick="playPause()">Reproducir/Pausa</button>
-<button onclick="handleNextClick()">Siguiente</button>
+    <!-- LOOP -->
+    <div id="loopToggleContainer" class="toggle-container">
+        <div id="loopToggle" class="toggle"></div>
+        <span>Loop</span>
+    </div>
 
-<br>
-
-<button onclick="toggleShuffle()">
-    Modo Aleatorio: <span id="shuffleStatus">Desactivado</span>
-</button>
-
-<button onclick="toggleLoop()">
-    Modo Bucle: <span id="loopStatus">Desactivado</span>
-</button>
+</div>
 
 <h2>Canciones</h2>
 

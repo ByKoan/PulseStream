@@ -8,6 +8,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const audioSource = document.getElementById("audioSource");
     const currentSongTitle = document.getElementById("currentSongTitle");
     const songList = document.getElementById("songList");
+    const shuffleToggle = document.getElementById("shuffleToggle");
+    const shuffleContainer = document.getElementById("shuffleToggleContainer");
+
+    const loopToggle = document.getElementById("loopToggle");
+    const loopContainer = document.getElementById("loopToggleContainer");
 
     let currentSongIndex = 0;
     let shuffle = false;
@@ -93,19 +98,20 @@ document.addEventListener("DOMContentLoaded", () => {
         loadSong(currentSongIndex);
     }
 
+
     function toggleShuffle() {
         shuffle = !shuffle;
-        document.getElementById("shuffleStatus").textContent =
-            shuffle ? "Activado" : "Desactivado";
+        shuffleToggle?.classList.toggle("active", shuffle);
     }
 
     function toggleLoop() {
         loop = !loop;
-        player.loop = loop;
-
-        document.getElementById("loopStatus").textContent =
-            loop ? "Activado" : "Desactivado";
+        player.loop = loop; // HTML5 loop real
+        loopToggle?.classList.toggle("active", loop);
     }
+
+    shuffleContainer?.addEventListener("click", toggleShuffle);
+    loopContainer?.addEventListener("click", toggleLoop);
 
     // ===============================
     // CLICK SONG

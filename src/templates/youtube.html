@@ -59,9 +59,18 @@
 
 <div class="youtube-player-container">
     <audio id="youtube-player" controls></audio>
-    <br>
-    <button id="youtube-loop-btn">Bucle: <span id="loopSongStatus">Desactivado</span></button>
-    <br>
+        <div class="mode-controls">
+
+            <div class="toggle-container" id="youtubeLoopToggleContainer">
+                <span>Modo Bucle</span>
+
+                <div id="youtubeLoopToggle" class="toggle-switch">
+                    <div class="toggle-knob"></div>
+                </div>
+
+            </div>
+
+        </div>
     <p id="now-playing">Nada reproduciéndose</p>
 </div>
 
