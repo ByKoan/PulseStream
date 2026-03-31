@@ -82,11 +82,14 @@ Root where ``html`` code where located
 ### Utils:
 - *file_utils.py:* This small script defines a utility function **`allowed_file`** that checks whether a given filename has an allowed file extension. 
 
-***.env:*** This file have the environment variables for the project
+### ***.env:***
+This file have the environment variables for the project
 
-***config.py:*** Declaration of variables
+### ***config.py:***
+Declaration of variables
 
-***main.py***: This file is the **main Flask application entry point** that sets up, configures, and runs the web server. It orchestrates the app’s configuration, database initialization, and routing. Here’s a detailed breakdown:
+### ***main.py:***
+This file is the **main Flask application entry point** that sets up, configures, and runs the web server. It orchestrates the app’s configuration, database initialization, and routing. Here’s a detailed breakdown:
 
 1. **Imports and Environment Setup:**
     - Imports `Flask`, configuration settings from `Config`, and `load_dotenv` to read environment variables from a `.env` file.

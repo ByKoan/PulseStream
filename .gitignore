@@ -7,3 +7,6 @@
 /src/utils/__pycache__/*.*
 .obsidian/
 /src/resources/__pycache__
+/Binarios/VisualizadorEscritorio/build/
+/Binarios/VisualizadorEscritorio/dist/
+/Binarios/VisualizadorEscritorio/MusicCloudServer.spec
