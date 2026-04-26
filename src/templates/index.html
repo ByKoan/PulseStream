@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ current_song }}</title>
+    <title>PulseStream - {{ current_song }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 </head>
@@ -52,6 +52,12 @@
 </div>
 
 <!-- ================= CONTENIDO ================= -->
+ 
+<!--
+<div class="logo-container">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
+</div>
+-->
 
 <h1>Bienvenido, {{ session['user_id'] }}</h1>
 <h2>Canción actual: <span id="currentSongTitle">{{ current_song }}</span></h2>

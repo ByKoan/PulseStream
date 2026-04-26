@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ playlist.name }}</title>
+    <title>PulseStream - {{ playlist.name }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='playlist_view.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 </head>
@@ -80,14 +80,14 @@
 
     <!-- SHUFFLE -->
     <div id="shuffleToggleContainer" class="toggle-container">
+        <span>Modo Aleatorio</span>
         <div id="shuffleToggle" class="toggle"></div>
-        <span>Shuffle</span>
     </div>
 
     <!-- LOOP -->
     <div id="loopToggleContainer" class="toggle-container">
+        <span>Modo Bucle</span>
         <div id="loopToggle" class="toggle"></div>
-        <span>Loop</span>
     </div>
 
 </div>
