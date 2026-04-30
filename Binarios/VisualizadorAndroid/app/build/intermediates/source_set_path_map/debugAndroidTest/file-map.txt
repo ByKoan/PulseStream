@@ -1,4 +1,0 @@
-com.webviewer.app.test.app-androidTest-0 C:\Users\Koan0xFF\Downloads\WebViewApp\app\build\generated\res\resValues\androidTest\debug
-com.webviewer.app.test.app-mergeDebugAndroidTestResources-1 C:\Users\Koan0xFF\Downloads\WebViewApp\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\merged.dir
-com.webviewer.app.test.app-mergeDebugAndroidTestResources-2 C:\Users\Koan0xFF\Downloads\WebViewApp\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\stripped.dir
-com.webviewer.app.test.app-merged_res-3 C:\Users\Koan0xFF\Downloads\WebViewApp\app\build\intermediates\merged_res\debugAndroidTest

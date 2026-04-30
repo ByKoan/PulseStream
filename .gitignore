@@ -10,3 +10,5 @@
 /Binarios/VisualizadorEscritorio/build/
 /Binarios/VisualizadorEscritorio/dist/
 /Binarios/VisualizadorEscritorio/MusicCloudServer.spec
+/Binarios/VisualizadorAndroid/.idea/*.*
+/Binarios/VisualizadorAndroid/build/*.*

@@ -370,4 +370,22 @@ ul {
     .dropdown-menu.show {
         transform: translateY(0);
     }
+
+    /* =========================
+    Logo
+    ========================= */
+
+    .logo-container {
+        display: flex;
+        justify-content: center; 
+        align-items: center;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+
+    .logo-container img {
+        width: 20;   
+        height: auto;
+        object-fit: contain;
+    }
 }
