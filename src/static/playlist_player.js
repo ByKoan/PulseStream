@@ -217,7 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if (data.success) {
                     if (syncStatus) {
-                        syncStatus.textContent = `✔ ${data.message}`;
+                        syncStatus.textContent = `${data.message}`;
                         syncStatus.className = "sync-status ok";
                         syncStatus.style.display = "block";
                     }
@@ -225,7 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     setTimeout(() => location.reload(), 1500);
                 } else {
                     if (syncStatus) {
-                        syncStatus.textContent = `✖ Error: ${data.error}`;
+                        syncStatus.textContent = `Error: ${data.error}`;
                         syncStatus.className = "sync-status error";
                         syncStatus.style.display = "block";
                     }
@@ -234,7 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             } catch (err) {
                 if (syncStatus) {
-                    syncStatus.textContent = `✖ Error de red: ${err}`;
+                    syncStatus.textContent = `Error de red: ${err}`;
                     syncStatus.className = "sync-status error";
                     syncStatus.style.display = "block";
                 }
