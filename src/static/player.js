@@ -160,6 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const title = item.querySelector(".song-title")?.textContent.toLowerCase() || "";
                 item.style.display = title.includes(query) ? "" : "none";
             });
+            updateCounter();
         });
     }
 
@@ -167,6 +168,7 @@ document.addEventListener("DOMContentLoaded", () => {
         resetSearch.addEventListener("click", () => {
             searchInput.value = "";
             songList.querySelectorAll(".song-item").forEach(item => item.style.display = "");
+            updateCounter();
         });
     }
 
@@ -268,6 +270,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (data.success) {
                     btn.closest(".song-item")?.remove();
                     window.songs = getSongs().filter(s => s !== filename);
+                    updateCounter();
                     alert(`"${filename}" borrada correctamente`);
                 } else {
                     alert(`Error: ${data.error}`);
@@ -276,6 +279,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 alert("Error al borrar la canción: " + err);
             }
         });
+    }
+
+    // ===============================
+    // COUNTER
+    // ===============================
+    function updateCounter() {
+        const footer = document.querySelector(".song-count-footer");
+        if (!footer) return;
+        const total = songList
+            ? songList.querySelectorAll(".song-item:not([style*='display: none']):not([style*='display:none'])").length
+            : 0;
+        footer.textContent = `${total} canción${total !== 1 ? "es" : ""} en tu biblioteca`;
     }
 
     // ===============================
@@ -292,5 +307,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // INITIAL LOAD
     // ===============================
     if (player && getSongs().length > 0) loadSong(currentSongIndex);
+    updateCounter();
 
 });

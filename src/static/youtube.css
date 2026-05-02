@@ -6,12 +6,13 @@ body {
     color: white;
     text-align: center;
     margin: 0;
-    padding: 20px;
+    padding: 80px 16px 70px;
+    box-sizing: border-box;
 }
 
 h1 {
-    font-size: 40px;
-    margin-bottom: 20px;
+    font-size: clamp(22px, 6vw, 40px);
+    margin-bottom: 16px;
 }
 
 /* ===== BOTONES ===== */
@@ -20,60 +21,108 @@ button {
     background-color: #000;
     border: none;
     color: white;
-    padding: 10px 18px;
-    font-size: 16px;
+    padding: 9px 16px;
+    font-size: 15px;
     margin: 5px;
     cursor: pointer;
     border-radius: 6px;
     transition: background 0.2s ease, transform 0.1s ease;
+    touch-action: manipulation;
 }
 
-button:hover {
-    background-color: #333;
-}
-
-button:active {
-    transform: scale(0.96);
-}
-
-/* ===== BOTÓN VOLVER ===== */
-
-#youtube-back-btn {
-    margin-bottom: 20px;
-}
+button:hover { background-color: #333; }
+button:active { transform: scale(0.96); }
 
 /* ===== SEARCH CONTAINER ===== */
 
 .youtube-search-container {
-    margin: 25px auto;
+    margin: 20px auto;
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     flex-wrap: wrap;
-}
-
-#youtube-search-input {
-    padding: 10px;
-    font-size: 16px;
-    border-radius: 6px;
-    border: none;
-    width: 260px;
-}
-
-/* ===== PLAYER ===== */
-
-.youtube-player-container {
-    margin: 20px auto;
-}
-
-#youtube-player {
-    width: 80%;
     max-width: 600px;
 }
 
+#youtube-search-input {
+    padding: 10px 12px;
+    font-size: 15px;
+    border-radius: 6px;
+    border: none;
+    flex: 1 1 180px;
+    max-width: 340px;
+}
+
+/* ===== REPRODUCTORES ===== */
+
+.youtube-player-container {
+    margin: 16px auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#youtube-audio-player,
+#youtube-video-player {
+    width: 90%;
+    max-width: 600px;
+    margin: 8px auto;
+    display: block;
+    border-radius: 8px;
+}
+
 #now-playing {
-    margin-top: 10px;
+    margin-top: 8px;
     font-style: italic;
+    font-size: 14px;
+}
+
+/* ===== MODOS ===== */
+
+.mode-controls {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 15px;
+    user-select: none;
+}
+
+.toggle-switch {
+    width: 54px;
+    height: 27px;
+    background: #444;
+    border-radius: 30px;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.toggle-knob {
+    width: 21px;
+    height: 21px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    transition: 0.3s;
+}
+
+.toggle-switch.active {
+    background: linear-gradient(135deg, #1d2671, #c33764);
+}
+
+.toggle-switch.active .toggle-knob {
+    left: 30px;
 }
 
 /* ===== RESULTADOS ===== */
@@ -81,80 +130,75 @@ button:active {
 .youtube-results-list {
     list-style: none;
     max-width: 700px;
-    margin: 25px auto;
-    padding: 0;
-
+    margin: 20px auto;
+    padding: 0 4px 0 0;
     display: flex;
     flex-direction: column;
-    align-items: stretch; 
+    align-items: stretch;
+    max-height: 480px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.3) transparent;
 }
+
+.youtube-results-list::-webkit-scrollbar { width: 5px; }
+.youtube-results-list::-webkit-scrollbar-track { background: transparent; }
+.youtube-results-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 3px; }
 
 .youtube-video-item {
     background: #000;
-    padding: 12px;
-    margin: 6px auto;
+    padding: 10px;
+    margin: 5px auto;
     border-radius: 8px;
-
     display: flex;
     align-items: center;
     gap: 10px;
-
     width: 100%;
     max-width: 700px;
     box-sizing: border-box;
-
     transition: background 0.2s;
+    text-align: left;
 }
+
+.youtube-video-item:hover { background: #333; }
 
 .yt-thumb {
-    width: 120px;
-    height: 70px;
+    width: 100px;
+    height: 60px;
     object-fit: cover;
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
+    flex-shrink: 0;
 }
 
-.yt-thumb:hover {
-    transform: scale(1.05);
-    transition: 0.2s;
-}
-
-.youtube-video-item:hover {
-    background: #333;
-}
+.yt-thumb:hover { transform: scale(1.04); transition: 0.2s; }
 
 .youtube-actions {
     display: flex;
     gap: 6px;
-    flex-shrink: 0; 
+    flex-shrink: 0;
+    flex-wrap: wrap;
 }
-
-.youtube-player-container {
-    margin: 20px auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-#youtube-player {
-    display: block;
-    margin: 0 auto;
-}
-
-/* ===== BOTÓN PLAY ===== */
 
 .youtube-play-btn {
     background: #1d2671;
-    border: none;
     color: white;
-    padding: 6px 12px;
+    padding: 6px 11px;
+    font-size: 13px;
     border-radius: 5px;
-    cursor: pointer;
+    white-space: nowrap;
 }
 
-.youtube-play-btn:hover {
-    background: #111860;
+.youtube-play-btn:hover { background: #111860; }
+
+/* ===== YT VIDEO TITLE ===== */
+.yt-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px;
 }
 
 /* =========================
@@ -169,118 +213,54 @@ button:active {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
+    padding: 12px 16px;
     box-sizing: border-box;
     z-index: 1000;
+    background: rgba(0,0,0,0.25);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
 }
 
-/* Contenedor del menú para poder posicionar dropdown relativo */
-.menu-container {
-    position: relative;
-}
-
-/* BOTONES DEL NAVBAR */
+.menu-container { position: relative; }
 
 .menu-toggle {
     background-color: greenyellow;
     color: black;
+    font-size: 14px;
+    padding: 8px 14px;
 }
 
-.menu-toggle:hover {
-    background-color: #1d2671;
-    color: white;
-}
+.menu-toggle:hover { background-color: #1d2671; color: white; }
 
 .logout {
     background-color: #ff4c4c;
+    font-size: 14px;
+    padding: 8px 14px;
 }
 
-.logout:hover {
-    background-color: #e43f3f;
-}
-
-/* =========================
-   DROPDOWN MENU
-========================= */
-
-.dropdown-menu {
-    position: absolute; /* relativo al .menu-container */
-    top: 50px;          /* justo debajo del botón Menu */
-    left: 0;
-    background: #000;
-    border-radius: 40px;
-    padding: 10px;
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s, transform 0.3s;
-    transform: translateY(-10px);
-    z-index: 2000; /* sobre todo */
-}
-
-/* Contenedor del navbar */
-.navbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    box-sizing: border-box;
-    z-index: 1000;
-}
-
-/* Contenedor del botón Menu */
-.menu-container {
-    position: relative;
-}
-
-/* BOTONES DEL NAVBAR */
-.menu-toggle {
-    background-color: greenyellow;
-    color: black;
-}
-
-.menu-toggle:hover {
-    background-color: #1d2671;
-    color: white;
-}
-
-.logout {
-    background-color: #ff4c4c;
-}
-
-.logout:hover {
-    background-color: #e43f3f;
-}
+.logout:hover { background-color: #e43f3f; }
 
 /* =========================
    DROPDOWN MENU - HORIZONTAL
 ========================= */
 
 .dropdown-menu {
-    position: absolute;      /* relativo al .menu-container */
-    top: 0;                  /* alineado al botón */
-    left: 100%;              /* justo a la derecha del botón */
+    position: absolute;
+    top: 0;
+    left: 100%;
     background: #000;
     border-radius: 40px;
-    padding: 10px 15px;
-    display: flex;           /* fila horizontal */
-    flex-direction: row;     /* botones en fila */
-    flex-wrap: nowrap;       /* NO se envuelvan */
-    gap: 10px;               /* espacio entre botones */
-    white-space: nowrap;     /* evita saltos de línea */
+    padding: 8px 14px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 8px;
+    white-space: nowrap;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s, transform 0.3s;
-    transform: translateX(-10px);  /* animación suave desde la izquierda */
-    z-index: 2000;           /* sobre todo */
+    transform: translateX(-10px);
+    z-index: 2000;
 }
 
 .dropdown-menu.show {
@@ -293,128 +273,13 @@ button:active {
     background: #d9d9d9;
     color: black;
     border-radius: 30px;
-    padding: 10px 25px;
-    flex-shrink: 0;          /* evita que los botones se reduzcan */
+    padding: 8px 18px;
+    font-size: 14px;
+    flex-shrink: 0;
 }
 
-.dropdown-menu button:hover {
-    background: white;
-}
-
-.dropdown-menu .active {
-    background: #8cff00;
-}
-
-/* =========================
-   MODOS (TOGGLE STYLE INDEX)
-========================= */
-
-.mode-controls {
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-    flex-wrap: wrap;
-    margin-top: 15px;
-}
-
-.toggle-container {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    font-size: 18px;
-}
-
-.toggle-switch {
-    width: 60px;
-    height: 30px;
-    background: #444;
-    border-radius: 30px;
-    position: relative;
-    transition: 0.3s;
-}
-
-.toggle-knob {
-    width: 24px;
-    height: 24px;
-    background: white;
-    border-radius: 50%;
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    transition: 0.3s;
-}
-
-.toggle-switch.active {
-    background: linear-gradient(135deg, #1d2671, #c33764);
-}
-
-.toggle-switch.active .toggle-knob {
-    left: 33px;
-}
-
-/* =========================
-   RESPONSIVE
-========================= */
-
-@media (max-width: 650px) {
-
-    body {
-        padding: 70px 10px 20px;
-    }
-
-    .playback-controls {
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-        margin: 15px auto;
-    }
-
-    audio {
-        max-width: 100%;
-    }
-
-    .nav-btn {
-        width: 100%;
-        max-width: 200px;
-        padding: 10px;
-        margin: 4px 0;
-    }
-
-    .mode-controls {
-        gap: 20px;
-        flex-wrap: wrap;
-    }
-
-    .toggle-container {
-        gap: 8px;
-        font-size: 16px;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-
-    .song-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-
-    .song-actions {
-        width: 100%;
-        justify-content: flex-end;
-    }
-
-    .dropdown-menu {
-        flex-direction: column;
-        top: 50px;
-        left: 0;
-        transform: translateY(-10px);
-    }
-
-    .dropdown-menu.show {
-        transform: translateY(0);
-    }
-}
+.dropdown-menu button:hover { background: white; }
+.dropdown-menu .active { background: #8cff00; }
 
 /* =========================
    FOOTER CONTADOR
@@ -431,23 +296,61 @@ button:active {
     color: rgba(255, 255, 255, 0.85);
     text-align: center;
     padding: 10px 20px;
-    font-size: 14px;
+    font-size: 13px;
     letter-spacing: 0.5px;
     border-top: 1px solid rgba(255, 255, 255, 0.12);
     z-index: 999;
 }
 
-
-/* Espacio para el footer fijo */
-body { padding-bottom: 60px !important; }
-
 /* =========================
-   REPRODUCTORES AUDIO/VIDEO
+   RESPONSIVE MÓVIL
 ========================= */
-#youtube-audio-player,
-#youtube-video-player {
-    width: 80%;
-    max-width: 600px;
-    margin: 10px auto;
-    display: block;
+
+@media (max-width: 480px) {
+    body { padding: 70px 10px 70px; }
+
+    h1 { font-size: 21px; }
+
+    .dropdown-menu {
+        flex-direction: column;
+        top: 44px;
+        left: 0;
+        border-radius: 12px;
+        transform: translateY(-8px);
+        max-width: 190px;
+    }
+
+    .dropdown-menu.show { transform: translateY(0); }
+
+    .dropdown-menu button {
+        border-radius: 8px;
+        padding: 10px 14px;
+        width: 100%;
+        text-align: left;
+    }
+
+    #youtube-search-input {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .youtube-video-item {
+        flex-wrap: wrap;
+    }
+
+    .yt-thumb {
+        width: 80px;
+        height: 50px;
+    }
+
+    .youtube-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    #youtube-audio-player,
+    #youtube-video-player {
+        width: 100%;
+        max-width: 100%;
+    }
 }

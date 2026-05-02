@@ -5,8 +5,9 @@
     background: linear-gradient(to right, #1d2671, #c33764);
     color: #fff;
     text-align: center;
-    padding: 20px;
+    padding: 80px 16px 40px;
     margin: 0;
+    box-sizing: border-box;
 }
 
 .admin-container {
@@ -15,12 +16,13 @@
 }
 
 h1 {
-    font-size: 40px;
+    font-size: clamp(22px, 6vw, 40px);
     margin-bottom: 20px;
 }
 
 h2 {
-    margin-top: 30px;
+    font-size: clamp(16px, 4vw, 24px);
+    margin-top: 28px;
 }
 
 /* ===== BOTONES ===== */
@@ -30,12 +32,13 @@ button,
     background-color: #000;
     border: none;
     color: white;
-    padding: 10px 20px;
-    font-size: 16px;
-    margin: 10px;
+    padding: 9px 18px;
+    font-size: 15px;
+    margin: 6px;
     cursor: pointer;
     border-radius: 5px;
     text-decoration: none;
+    touch-action: manipulation;
 }
 
 button:hover,
@@ -45,26 +48,41 @@ button:hover,
 
 /* ===== FORM CREAR USUARIO ===== */
 
+.create-user {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
 .create-user input,
 .create-user select {
-    padding: 8px;
-    font-size: 16px;
+    padding: 8px 12px;
+    font-size: 15px;
     border-radius: 5px;
     border: none;
-    margin-bottom: 10px;
+    flex: 1 1 140px;
+    max-width: 220px;
 }
 
 /* ===== BUSCADOR ===== */
 
 .search-form {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
 }
 
 .search-form input[type="text"] {
-    padding: 8px;
-    font-size: 16px;
+    padding: 8px 12px;
+    font-size: 15px;
     border-radius: 5px;
     border: none;
+    flex: 1 1 180px;
+    max-width: 280px;
 }
 
 /* ===== TABLA USUARIOS ===== */
@@ -72,13 +90,16 @@ button:hover,
 .users-table-container {
     max-height: 350px;
     overflow-y: auto;
-    width: 90%;
+    overflow-x: auto;          /* scroll horizontal en móvil */
+    width: 95%;
     margin: auto;
     border-radius: 10px;
+    -webkit-overflow-scrolling: touch;
 }
 
 table {
     width: 100%;
+    min-width: 640px;          /* evita que se aplaste en móvil */
     border-collapse: collapse;
     background-color: #000;
     color: white;
@@ -87,8 +108,10 @@ table {
 table th,
 table td {
     border: 1px solid #fff;
-    padding: 10px;
+    padding: 8px 6px;
     text-align: center;
+    font-size: 13px;
+    white-space: nowrap;
 }
 
 table th {
@@ -104,26 +127,17 @@ table td form {
 .ban {
     background-color: #ff9800;
 }
-
-.ban:hover {
-    background-color: #e68900;
-}
+.ban:hover { background-color: #e68900; }
 
 .unban {
     background-color: #4caf50;
 }
-
-.unban:hover {
-    background-color: #3d8b40;
-}
+.unban:hover { background-color: #3d8b40; }
 
 .delete {
     background-color: #ff4c4c;
 }
-
-.delete:hover {
-    background-color: #e43f3f;
-}
+.delete:hover { background-color: #e43f3f; }
 
 .role-btn {
     background-color: rgb(1, 187, 187);
@@ -147,14 +161,15 @@ table td form {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    gap: 40px;
+    gap: 30px;
     margin-top: 40px;
     flex-wrap: wrap;
 }
 
 .stats-section {
-    width: 45%;
-    min-width: 400px;
+    flex: 1 1 320px;
+    min-width: 0;
+    max-width: 560px;
 }
 
 /* ===== CAJAS DE ESTADÍSTICAS ===== */
@@ -209,21 +224,23 @@ table td form {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
+    padding: 12px 16px;
     box-sizing: border-box;
     z-index: 1000;
+    background: rgba(0,0,0,0.25);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
 }
 
-/* Contenedor del menú para poder posicionar dropdown relativo */
 .menu-container {
     position: relative;
 }
 
-/* BOTONES DEL NAVBAR */
-
 .menu-toggle {
     background-color: greenyellow;
     color: black;
+    font-size: 14px;
+    padding: 8px 14px;
 }
 
 .menu-toggle:hover {
@@ -233,67 +250,8 @@ table td form {
 
 .logout {
     background-color: #ff4c4c;
-}
-
-.logout:hover {
-    background-color: #e43f3f;
-}
-
-/* =========================
-   DROPDOWN MENU
-========================= */
-
-.dropdown-menu {
-    position: absolute; /* relativo al .menu-container */
-    top: 50px;          /* justo debajo del botón Menu */
-    left: 0;
-    background: #000;
-    border-radius: 40px;
-    padding: 10px;
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s, transform 0.3s;
-    transform: translateY(-10px);
-    z-index: 2000; /* sobre todo */
-}
-
-/* Contenedor del navbar */
-.navbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    box-sizing: border-box;
-    z-index: 1000;
-}
-
-/* Contenedor del botón Menu */
-.menu-container {
-    position: relative;
-}
-
-/* BOTONES DEL NAVBAR */
-.menu-toggle {
-    background-color: greenyellow;
-    color: black;
-}
-
-.menu-toggle:hover {
-    background-color: #1d2671;
-    color: white;
-}
-
-.logout {
-    background-color: #ff4c4c;
+    font-size: 14px;
+    padding: 8px 14px;
 }
 
 .logout:hover {
@@ -305,22 +263,22 @@ table td form {
 ========================= */
 
 .dropdown-menu {
-    position: absolute;      /* relativo al .menu-container */
-    top: 0;                  /* alineado al botón */
-    left: 100%;              /* justo a la derecha del botón */
+    position: absolute;
+    top: 0;
+    left: 100%;
     background: #000;
     border-radius: 40px;
-    padding: 10px 15px;
-    display: flex;           /* fila horizontal */
-    flex-direction: row;     /* botones en fila */
-    flex-wrap: nowrap;       /* NO se envuelvan */
-    gap: 10px;               /* espacio entre botones */
-    white-space: nowrap;     /* evita saltos de línea */
+    padding: 8px 14px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 8px;
+    white-space: nowrap;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s, transform 0.3s;
-    transform: translateX(-10px);  /* animación suave desde la izquierda */
-    z-index: 2000;           /* sobre todo */
+    transform: translateX(-10px);
+    z-index: 2000;
 }
 
 .dropdown-menu.show {
@@ -333,8 +291,9 @@ table td form {
     background: #d9d9d9;
     color: black;
     border-radius: 30px;
-    padding: 10px 25px;
-    flex-shrink: 0;          /* evita que los botones se reduzcan */
+    padding: 8px 18px;
+    font-size: 14px;
+    flex-shrink: 0;
 }
 
 .dropdown-menu button:hover {
@@ -346,64 +305,80 @@ table td form {
 }
 
 /* =========================
-   RESPONSIVE
+   RESPONSIVE MÓVIL
 ========================= */
 
-@media (max-width: 650px) {
-
-    body {
-        padding: 70px 10px 20px;
+@media (max-width: 600px) {
+    .admin-body {
+        padding: 72px 10px 30px;
     }
 
-    .playback-controls {
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-        margin: 15px auto;
-    }
-
-    audio {
-        max-width: 100%;
-    }
-
-    .nav-btn {
-        width: 100%;
-        max-width: 200px;
-        padding: 10px;
-        margin: 4px 0;
-    }
-
-    .mode-controls {
-        gap: 20px;
-        flex-wrap: wrap;
-    }
-
-    .toggle-container {
-        gap: 8px;
-        font-size: 16px;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-
-    .song-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-
-    .song-actions {
-        width: 100%;
-        justify-content: flex-end;
+    h1 {
+        font-size: 22px;
     }
 
     .dropdown-menu {
         flex-direction: column;
-        top: 50px;
+        top: 44px;
         left: 0;
-        transform: translateY(-10px);
+        border-radius: 12px;
+        transform: translateY(-8px);
+        max-width: 190px;
     }
 
     .dropdown-menu.show {
         transform: translateY(0);
+    }
+
+    .dropdown-menu button {
+        border-radius: 8px;
+        padding: 10px 14px;
+        width: 100%;
+        text-align: left;
+    }
+
+    .stat-box {
+        width: 45%;
+        aspect-ratio: 1 / 1;
+        padding: 12px;
+    }
+
+    .system-stats {
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .stat-box canvas {
+        width: 70% !important;
+        height: 70% !important;
+    }
+
+    .stats-wrapper {
+        gap: 16px;
+        margin-top: 20px;
+    }
+
+    .stats-section {
+        width: 100%;
+        min-width: 0;
+    }
+
+    table th,
+    table td {
+        font-size: 11px;
+        padding: 6px 4px;
+    }
+
+    button, .btn-back {
+        font-size: 12px;
+        padding: 6px 10px;
+        margin: 3px;
+    }
+
+    .create-user input,
+    .create-user select {
+        max-width: 100%;
+        width: 100%;
+        flex: 1 1 100%;
     }
 }

@@ -287,22 +287,22 @@
 
             <div class="stat-box">
                 <h3>Usuarios</h3>
-                <p class="big-stat">{{ server_stats.total_users }}</p>
+                <p class="big-stat" id="stat-users">{{ server_stats.total_users }}</p>
             </div>
 
             <div class="stat-box">
                 <h3>Canciones</h3>
-                <p class="big-stat">{{ server_stats.total_songs }}</p>
+                <p class="big-stat" id="stat-songs">{{ server_stats.total_songs }}</p>
             </div>
 
             <div class="stat-box">
                 <h3>Reproducciones</h3>
-                <p class="big-stat">{{ server_stats.total_plays }}</p>
+                <p class="big-stat" id="stat-plays">{{ server_stats.total_plays }}</p>
             </div>
 
             <div class="stat-box">
                 <h3>Top canción</h3>
-                <p>
+                <p id="stat-top-song">
                 {% if server_stats.top_song %}
                     {{ server_stats.top_song.title }}
                     <br>
@@ -315,7 +315,7 @@
 
             <div class="stat-box">
                 <h3>Top uploader</h3>
-                <p>
+                <p id="stat-top-user">
                 {% if server_stats.top_user %}
                     {{ server_stats.top_user.username }}
                     <br>

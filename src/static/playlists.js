@@ -20,6 +20,35 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // ===============================
+    // CONTADOR DE PLAYLISTS EN TIEMPO REAL
+    // ===============================
+    function updatePlaylistCounter(count) {
+        const numEl = document.getElementById("playlist-count-num");
+        const pluralEl = document.getElementById("playlist-count-plural");
+        if (!numEl) return;
+        numEl.textContent = count;
+        if (pluralEl) pluralEl.textContent = count !== 1 ? "s" : "";
+    }
+
+    function updateCounterFromDOM() {
+        const count = document.querySelectorAll(".playlist-item").length;
+        updatePlaylistCounter(count);
+    }
+
+    async function pollPlaylistCount() {
+        try {
+            const res = await fetch("/api/playlist_count");
+            if (!res.ok) return;
+            const data = await res.json();
+            updatePlaylistCounter(data.count);
+        } catch (err) {
+            updateCounterFromDOM();
+        }
+    }
+
+    setInterval(pollPlaylistCount, 5000);
+
+    // ===============================
     // IMPORTAR PLAYLIST YOUTUBE
     // ===============================
     async function importYT() {
@@ -44,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    window.importYT = importYT; // global para el botón inline
+    window.importYT = importYT;
 
     // ===============================
     // RENOMBRAR PLAYLIST INLINE
@@ -104,6 +133,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 const data = await res.json();
                 if (data.success) {
                     btn.closest(".playlist-item")?.remove();
+                    // Actualizar contador inmediatamente tras eliminar
+                    updateCounterFromDOM();
                     alert("Playlist eliminada correctamente");
                 } else {
                     alert(`Error: ${data.error}`);

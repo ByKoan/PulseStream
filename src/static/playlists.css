@@ -5,17 +5,19 @@ body {
     background: linear-gradient(to right, #1d2671, #c33764);
     color: #fff;
     text-align: center;
-    padding: 20px;
+    padding: 80px 16px 70px;
     margin: 0;
+    box-sizing: border-box;
 }
 
 h1 {
-    font-size: 40px;
-    margin-bottom: 20px;
+    font-size: clamp(22px, 6vw, 40px);
+    margin-bottom: 16px;
 }
 
 h2 {
-    margin-top: 30px;
+    font-size: clamp(15px, 4vw, 22px);
+    margin-top: 24px;
 }
 
 /* ===== BOTONES ===== */
@@ -25,12 +27,13 @@ a {
     background-color: #000;
     border: none;
     color: white;
-    padding: 10px 20px;
-    font-size: 16px;
-    margin: 10px;
+    padding: 9px 18px;
+    font-size: 15px;
+    margin: 6px;
     cursor: pointer;
     border-radius: 5px;
     text-decoration: none;
+    touch-action: manipulation;
 }
 
 button:hover,
@@ -40,21 +43,47 @@ a:hover {
 
 /* ===== FORMULARIOS ===== */
 
+.create-playlist-form {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin: 10px auto;
+}
+
 input[type="text"] {
-    padding: 8px;
-    font-size: 16px;
+    padding: 8px 12px;
+    font-size: 15px;
     border-radius: 5px;
     border: none;
+    max-width: 280px;
+    width: 100%;
+}
+
+.yt-import-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin: 8px auto;
 }
 
 /* ===== LISTA PLAYLISTS ===== */
 
 ul {
     list-style: none;
-    padding: 0;
-    margin: 20px auto;
+    padding: 0 4px 0 0;
+    margin: 16px auto;
     max-width: 600px;
+    max-height: 420px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.3) transparent;
 }
+
+ul::-webkit-scrollbar { width: 5px; }
+ul::-webkit-scrollbar-track { background: transparent; }
+ul::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 3px; }
 
 /* ===== ITEM PLAYLIST ===== */
 
@@ -63,11 +92,13 @@ ul {
     justify-content: space-between;
     align-items: center;
     padding: 10px 12px;
-    margin: 5px 0;
+    margin: 6px 0;
     background-color: #000;
     border-radius: 8px;
     text-align: left;
     transition: background 0.2s;
+    gap: 8px;
+    min-width: 0;
 }
 
 .playlist-item:hover {
@@ -79,19 +110,20 @@ ul {
     text-decoration: none;
 }
 
-/* ===== NOMBRE PLAYLIST (SCROLL HORIZONTAL) ===== */
+/* ===== NOMBRE PLAYLIST ===== */
 
 .playlist-name-wrapper {
     flex: 1;
-    overflow-x: auto;
-    overflow-y: hidden;
-    white-space: nowrap;
-    scrollbar-width: thin;
+    overflow: hidden;
+    min-width: 0;
 }
 
 .playlist-name {
     display: inline-block;
-    padding-right: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
 }
 
 /* ===== ACCIONES ===== */
@@ -100,10 +132,16 @@ ul {
     display: flex;
     gap: 6px;
     flex-shrink: 0;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .playlist-btn {
     background-color: #ff1a1a;
+    font-size: 13px;
+    padding: 6px 12px;
+    margin: 2px;
 }
 
 .playlist-btn:hover {
@@ -111,10 +149,11 @@ ul {
 }
 
 .rename-input {
-    padding: 4px 6px;
+    padding: 4px 8px;
     font-size: 0.9em;
     border-radius: 4px;
     border: none;
+    width: 110px;
 }
 
 /* =========================
@@ -129,21 +168,23 @@ ul {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
+    padding: 12px 16px;
     box-sizing: border-box;
     z-index: 1000;
+    background: rgba(0,0,0,0.25);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
 }
 
-/* Contenedor del menú para poder posicionar dropdown relativo */
 .menu-container {
     position: relative;
 }
 
-/* BOTONES DEL NAVBAR */
-
 .menu-toggle {
     background-color: greenyellow;
     color: black;
+    font-size: 14px;
+    padding: 8px 14px;
 }
 
 .menu-toggle:hover {
@@ -153,67 +194,8 @@ ul {
 
 .logout {
     background-color: #ff4c4c;
-}
-
-.logout:hover {
-    background-color: #e43f3f;
-}
-
-/* =========================
-   DROPDOWN MENU
-========================= */
-
-.dropdown-menu {
-    position: absolute; /* relativo al .menu-container */
-    top: 50px;          /* justo debajo del botón Menu */
-    left: 0;
-    background: #000;
-    border-radius: 40px;
-    padding: 10px;
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s, transform 0.3s;
-    transform: translateY(-10px);
-    z-index: 2000; /* sobre todo */
-}
-
-/* Contenedor del navbar */
-.navbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    box-sizing: border-box;
-    z-index: 1000;
-}
-
-/* Contenedor del botón Menu */
-.menu-container {
-    position: relative;
-}
-
-/* BOTONES DEL NAVBAR */
-.menu-toggle {
-    background-color: greenyellow;
-    color: black;
-}
-
-.menu-toggle:hover {
-    background-color: #1d2671;
-    color: white;
-}
-
-.logout {
-    background-color: #ff4c4c;
+    font-size: 14px;
+    padding: 8px 14px;
 }
 
 .logout:hover {
@@ -225,22 +207,22 @@ ul {
 ========================= */
 
 .dropdown-menu {
-    position: absolute;      /* relativo al .menu-container */
-    top: 0;                  /* alineado al botón */
-    left: 100%;              /* justo a la derecha del botón */
+    position: absolute;
+    top: 0;
+    left: 100%;
     background: #000;
     border-radius: 40px;
-    padding: 10px 15px;
-    display: flex;           /* fila horizontal */
-    flex-direction: row;     /* botones en fila */
-    flex-wrap: nowrap;       /* NO se envuelvan */
-    gap: 10px;               /* espacio entre botones */
-    white-space: nowrap;     /* evita saltos de línea */
+    padding: 8px 14px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 8px;
+    white-space: nowrap;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s, transform 0.3s;
-    transform: translateX(-10px);  /* animación suave desde la izquierda */
-    z-index: 2000;           /* sobre todo */
+    transform: translateX(-10px);
+    z-index: 2000;
 }
 
 .dropdown-menu.show {
@@ -253,8 +235,9 @@ ul {
     background: #d9d9d9;
     color: black;
     border-radius: 30px;
-    padding: 10px 25px;
-    flex-shrink: 0;          /* evita que los botones se reduzcan */
+    padding: 8px 18px;
+    font-size: 14px;
+    flex-shrink: 0;
 }
 
 .dropdown-menu button:hover {
@@ -263,69 +246,6 @@ ul {
 
 .dropdown-menu .active {
     background: #8cff00;
-}
-
-/* =========================
-   RESPONSIVE
-========================= */
-
-@media (max-width: 650px) {
-
-    body {
-        padding: 70px 10px 20px;
-    }
-
-    .playback-controls {
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-        margin: 15px auto;
-    }
-
-    audio {
-        max-width: 100%;
-    }
-
-    .nav-btn {
-        width: 100%;
-        max-width: 200px;
-        padding: 10px;
-        margin: 4px 0;
-    }
-
-    .mode-controls {
-        gap: 20px;
-        flex-wrap: wrap;
-    }
-
-    .toggle-container {
-        gap: 8px;
-        font-size: 16px;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-
-    .song-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-
-    .song-actions {
-        width: 100%;
-        justify-content: flex-end;
-    }
-
-    .dropdown-menu {
-        flex-direction: column;
-        top: 50px;
-        left: 0;
-        transform: translateY(-10px);
-    }
-
-    .dropdown-menu.show {
-        transform: translateY(0);
-    }
 }
 
 /* =========================
@@ -343,12 +263,59 @@ ul {
     color: rgba(255, 255, 255, 0.85);
     text-align: center;
     padding: 10px 20px;
-    font-size: 14px;
+    font-size: 13px;
     letter-spacing: 0.5px;
     border-top: 1px solid rgba(255, 255, 255, 0.12);
     z-index: 999;
 }
 
+/* =========================
+   RESPONSIVE MÓVIL
+========================= */
 
-/* Espacio para el footer fijo */
-body { padding-bottom: 60px !important; }
+@media (max-width: 480px) {
+    body {
+        padding: 70px 10px 70px;
+    }
+
+    h1 { font-size: 21px; }
+
+    ul {
+        max-width: 100%;
+        padding: 0;
+    }
+
+    .dropdown-menu {
+        flex-direction: column;
+        top: 44px;
+        left: 0;
+        border-radius: 12px;
+        transform: translateY(-8px);
+        max-width: 190px;
+    }
+
+    .dropdown-menu.show {
+        transform: translateY(0);
+    }
+
+    .dropdown-menu button {
+        border-radius: 8px;
+        padding: 10px 14px;
+        width: 100%;
+        text-align: left;
+    }
+
+    .playlist-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .playlist-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    input[type="text"] {
+        max-width: 100%;
+    }
+}

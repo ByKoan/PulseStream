@@ -5,17 +5,22 @@ body {
     text-align: center;
     padding: 20px;
     margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
 }
 
-/* ---------- GENERAL ---------- */
 h1, h2 {
-    font-size: 32px;
-    margin-bottom: 20px;
+    font-size: clamp(22px, 5vw, 32px);
+    margin-bottom: 16px;
 }
 
 .error {
     color: #ff6b6b;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
+    font-size: 14px;
 }
 
 button, .btn, a {
@@ -28,6 +33,7 @@ button, .btn, a {
     text-decoration: none;
     cursor: pointer;
     transition: all 0.3s ease;
+    touch-action: manipulation;
 }
 
 button:hover, .btn:hover {
@@ -35,14 +41,14 @@ button:hover, .btn:hover {
     transform: translateY(-2px);
 }
 
-
 /* ---------- LOGIN ---------- */
 .login-container {
+    width: 100%;
     max-width: 400px;
-    margin: 60px auto;
     background-color: rgba(0,0,0,0.5);
-    padding: 80px;
-    border-radius: 10px;
+    padding: clamp(24px, 8vw, 60px);
+    border-radius: 12px;
+    box-sizing: border-box;
 }
 
 .login-container label {
@@ -50,15 +56,18 @@ button:hover, .btn:hover {
     text-align: left;
     margin-bottom: 5px;
     font-weight: bold;
+    font-size: 15px;
 }
 
 .login-container input[type="text"],
 .login-container input[type="password"] {
     width: 100%;
-    padding: 10px;
-    margin-bottom: 20px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
     border-radius: 5px;
     border: none;
+    font-size: 15px;
+    box-sizing: border-box;
 }
 
 .button-group {
@@ -71,5 +80,18 @@ button:hover, .btn:hover {
     flex: 1;
     text-align: center;
     padding: 12px 0;
-    font-size: 16px;
+    font-size: 15px;
+}
+
+/* Responsive ajuste extra pequeño */
+@media (max-width: 380px) {
+    .login-container {
+        padding: 20px 16px;
+    }
+    .button-group {
+        flex-direction: column;
+    }
+    .button-group .btn {
+        width: 100%;
+    }
 }

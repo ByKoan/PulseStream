@@ -175,6 +175,42 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         setInterval(updateSystemStats, 1000);
+
+        // ===============================
+        // ESTADÍSTICAS DEL SERVIDOR (BD) EN TIEMPO REAL
+        // ===============================
+        async function updateServerStats() {
+            try {
+                const res = await fetch("/admin/server_stats_db");
+                const data = await res.json();
+
+                const statUsers = document.getElementById("stat-users");
+                const statSongs = document.getElementById("stat-songs");
+                const statPlays = document.getElementById("stat-plays");
+                const statTopSong = document.getElementById("stat-top-song");
+                const statTopUser = document.getElementById("stat-top-user");
+
+                if (statUsers) statUsers.textContent = data.total_users;
+                if (statSongs) statSongs.textContent = data.total_songs;
+                if (statPlays) statPlays.textContent = data.total_plays;
+
+                if (statTopSong) {
+                    statTopSong.innerHTML = data.top_song_title
+                        ? `${data.top_song_title}<br>(${data.top_song_plays} plays)`
+                        : "Sin datos";
+                }
+
+                if (statTopUser) {
+                    statTopUser.innerHTML = data.top_user_name
+                        ? `${data.top_user_name}<br>(${data.top_user_total} canciones)`
+                        : "Sin datos";
+                }
+            } catch (err) {
+                console.error("Error al actualizar server stats:", err);
+            }
+        }
+
+        setInterval(updateServerStats, 5000);
     }
 
     // ===============================

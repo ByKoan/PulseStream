@@ -116,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function toggleLoop() {
         loop = !loop;
-        player.loop = loop; // HTML5 loop real
+        player.loop = loop; 
         loopToggle?.classList.toggle("active", loop);
     }
 
@@ -164,6 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 item.style.display =
                     title.includes(query) ? "" : "none";
             });
+            updateCounter();
         });
     }
 
@@ -172,6 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
             searchInput.value = "";
             songList.querySelectorAll(".song-item")
                 .forEach(i => i.style.display = "");
+            updateCounter();
         });
     }
 
@@ -185,10 +187,54 @@ document.addEventListener("DOMContentLoaded", () => {
     window.toggleLoop = toggleLoop;
 
     // ===============================
+    // COUNTER
+    // ===============================
+    function updateCounter() {
+        const footer = document.querySelector(".song-count-footer");
+        if (!footer) return;
+        const total = songList
+            ? songList.querySelectorAll(".song-item:not([style*='display: none']):not([style*='display:none'])").length
+            : 0;
+        footer.textContent = `${total} canción${total !== 1 ? "es" : ""} en esta playlist`;
+    }
+
+    // ===============================
+    // REMOVE FROM PLAYLIST
+    // ===============================
+    if (songList) {
+        songList.addEventListener("click", async e => {
+            const btn = e.target.closest(".remove-from-playlist");
+            if (!btn) return;
+
+            const filename = btn.dataset.filename;
+            const playlistId = btn.dataset.playlist;
+
+            try {
+                const res = await fetch("/remove_from_playlist", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ filename, playlist_id: playlistId })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    btn.closest(".song-item")?.remove();
+                    window.songs = (window.songs || []).filter(s => s !== filename);
+                    updateCounter();
+                } else {
+                    alert("Error: " + data.error);
+                }
+            } catch (err) {
+                alert("Error: " + err);
+            }
+        });
+    }
+
+    // ===============================
     // INITIAL LOAD
     // ===============================
     if (player && getSongs().length > 0)
         loadSong(0);
+    updateCounter();
 
     // ===============================
     // SINCRONIZAR CON YOUTUBE
@@ -221,7 +267,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         syncStatus.className = "sync-status ok";
                         syncStatus.style.display = "block";
                     }
-                    // Recargar para reflejar la lista actualizada
+
                     setTimeout(() => location.reload(), 1500);
                 } else {
                     if (syncStatus) {

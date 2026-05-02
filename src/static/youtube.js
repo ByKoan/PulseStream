@@ -51,6 +51,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ===============================
+    // COUNTER
+    // ===============================
+    function updateCounter() {
+        const footer  = document.getElementById("youtube-count-footer");
+        const countEl = document.getElementById("youtube-result-count");
+        const plural1 = document.getElementById("youtube-result-plural");
+        const plural2 = document.getElementById("youtube-result-plural2");
+        if (!footer || !countEl) return;
+        const total = document.getElementById("youtube-results")
+            ?.querySelectorAll(".youtube-video-item").length || 0;
+        countEl.textContent = total;
+        const s = total === 1 ? "" : "s";
+        if (plural1) plural1.textContent = s;
+        if (plural2) plural2.textContent = s;
+        footer.style.display = total > 0 ? "block" : "none";
+    }
+
+    // ===============================
     // SEARCH
     // ===============================
     async function searchYoutube() {
@@ -88,19 +106,6 @@ document.addEventListener("DOMContentLoaded", () => {
     function showResults(videos) {
         results.innerHTML = "";
 
-        // --- Contador ---
-        const footer  = document.getElementById("youtube-count-footer");
-        const countEl = document.getElementById("youtube-result-count");
-        const plural1 = document.getElementById("youtube-result-plural");
-        const plural2 = document.getElementById("youtube-result-plural2");
-        if (footer && countEl) {
-            countEl.textContent = videos.length;
-            const s = videos.length === 1 ? "" : "s";
-            if (plural1) plural1.textContent = s;
-            if (plural2) plural2.textContent = s;
-            footer.style.display = "block";
-        }
-
         videos.forEach(video => {
             const li = document.createElement("li");
             li.className = "youtube-video-item";
@@ -121,12 +126,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Botón audio
             const playBtn = document.createElement("button");
-            playBtn.textContent = "▶ Audio";
+            playBtn.textContent = "Reproducir Audio";
             playBtn.onclick = () => playYoutubeAudio(video.url, video.title);
 
             // Botón descarga
             const downloadBtn = document.createElement("button");
-            downloadBtn.textContent = "⬇ Descargar";
+            downloadBtn.textContent = "⬇";
             downloadBtn.onclick = () => downloadYoutube(video);
 
             const actions = document.createElement("div");
@@ -137,6 +142,8 @@ document.addEventListener("DOMContentLoaded", () => {
             li.append(img, title, actions);
             results.appendChild(li);
         });
+
+        updateCounter();
     }
 
     // ===============================
