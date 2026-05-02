@@ -86,5 +86,10 @@
          </ul>
 
       <script src="{{ url_for('static', filename='playlists.js') }}"></script>
+
+      <!-- ================= FOOTER CONTADOR ================= -->
+      <div class="song-count-footer">
+         {{ playlists | length }} playlist{% if playlists | length != 1 %}s{% endif %} en tu biblioteca
+      </div>
    </body>
 </html>

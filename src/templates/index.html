@@ -137,5 +137,10 @@ window.currentSongIndex = 0;
 
 <script src="{{ url_for('static', filename='player.js') }}"></script>
 
+<!-- ================= FOOTER CONTADOR ================= -->
+<div class="song-count-footer">
+    {{ songs | length }} canción{% if songs | length != 1 %}es{% endif %} descargadas en tu biblioteca
+</div>
+
 </body>
 </html>

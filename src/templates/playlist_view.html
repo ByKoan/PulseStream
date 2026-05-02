@@ -128,5 +128,10 @@
 
 <script src="{{ url_for('static', filename='playlist_player.js') }}"></script>
 
+<!-- ================= FOOTER CONTADOR ================= -->
+<div class="song-count-footer">
+    {{ songs | length }} canción{% if songs | length != 1 %}es{% endif %} en esta playlist
+</div>
+
 </body>
 </html>

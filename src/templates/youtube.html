@@ -59,23 +59,31 @@
 </div>
 
 <div class="youtube-player-container">
-    <video id="youtube-player" controls playsinline webkit-playsinline style="display:none;"></video>
-        <div class="mode-controls">
 
-            <div class="toggle-container" id="youtubeLoopToggleContainer">
-                <span>Modo Bucle</span>
+    <!-- Reproductor VIDEO (al hacer click en miniatura) -->
+    <video id="youtube-video-player" controls playsinline webkit-playsinline style="display:none;"></video>
 
-                <div id="youtubeLoopToggle" class="toggle-switch">
-                    <div class="toggle-knob"></div>
-                </div>
+    <!-- Reproductor AUDIO (al hacer click en ▶ Audio) -->
+    <audio id="youtube-audio-player" controls style="display:none;"></audio>
 
+    <div class="mode-controls">
+        <div class="toggle-container" id="youtubeLoopToggleContainer">
+            <span>Modo Bucle</span>
+            <div id="youtubeLoopToggle" class="toggle-switch">
+                <div class="toggle-knob"></div>
             </div>
-
         </div>
+    </div>
+
     <p id="now-playing">Nada reproduciéndose</p>
 </div>
 
 <ul id="youtube-results" class="youtube-results-list"></ul>
+
+<!-- ================= FOOTER CONTADOR ================= -->
+<div class="song-count-footer" id="youtube-count-footer" style="display:none;">
+    <span id="youtube-result-count">0</span> resultado<span id="youtube-result-plural">s</span> encontrado<span id="youtube-result-plural2">s</span>
+</div>
 
 <script src="{{ url_for('static', filename='youtube.js') }}"></script>
 </body>
