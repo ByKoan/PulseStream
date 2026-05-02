@@ -52,6 +52,21 @@
 
 <h1>Playlist: {{ playlist.name }}</h1>
 
+{% if playlist.youtube_url %}
+<div class="yt-sync-bar">
+    <span class="yt-badge">▶ YouTube</span>
+    {% if playlist.last_synced %}
+    <span class="yt-sync-info">Última sincronización: {{ playlist.last_synced.strftime('%d/%m/%Y %H:%M') }}</span>
+    {% else %}
+    <span class="yt-sync-info">Nunca sincronizada</span>
+    {% endif %}
+    <button id="syncYtBtn" class="sync-btn" data-playlist="{{ playlist.id }}">
+        Sincronizar con YouTube
+    </button>
+</div>
+<div id="syncStatus" class="sync-status" style="display:none;"></div>
+{% endif %}
+
 <h2>Canción actual: <span id="currentSongTitle"></span></h2>
 
 <div class="playback-controls">

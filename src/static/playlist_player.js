@@ -190,4 +190,58 @@ document.addEventListener("DOMContentLoaded", () => {
     if (player && getSongs().length > 0)
         loadSong(0);
 
+    // ===============================
+    // SINCRONIZAR CON YOUTUBE
+    // ===============================
+    const syncBtn = document.getElementById("syncYtBtn");
+    const syncStatus = document.getElementById("syncStatus");
+
+    if (syncBtn) {
+        syncBtn.addEventListener("click", async () => {
+            const playlistId = syncBtn.dataset.playlist;
+
+            syncBtn.disabled = true;
+            syncBtn.textContent = "Sincronizando...";
+            if (syncStatus) {
+                syncStatus.style.display = "none";
+                syncStatus.className = "sync-status";
+            }
+
+            try {
+                const res = await fetch("/sync_youtube_playlist", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ playlist_id: playlistId })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    if (syncStatus) {
+                        syncStatus.textContent = `✔ ${data.message}`;
+                        syncStatus.className = "sync-status ok";
+                        syncStatus.style.display = "block";
+                    }
+                    // Recargar para reflejar la lista actualizada
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    if (syncStatus) {
+                        syncStatus.textContent = `✖ Error: ${data.error}`;
+                        syncStatus.className = "sync-status error";
+                        syncStatus.style.display = "block";
+                    }
+                    syncBtn.disabled = false;
+                    syncBtn.textContent = "Sincronizar con YouTube";
+                }
+            } catch (err) {
+                if (syncStatus) {
+                    syncStatus.textContent = `✖ Error de red: ${err}`;
+                    syncStatus.className = "sync-status error";
+                    syncStatus.style.display = "block";
+                }
+                syncBtn.disabled = false;
+                syncBtn.textContent = "Sincronizar con YouTube";
+            }
+        });
+    }
+
 });

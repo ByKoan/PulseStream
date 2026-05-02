@@ -239,7 +239,6 @@ ul {
 
 .song-item:hover {
     background-color: #333;
-    transform: scale(1.01);
 }
 
 .song-title {
@@ -272,7 +271,7 @@ ul {
 ========================= */
 
 .playlist-wrapper {
-    position: relative;
+    position: static;
 }
 
 .add-btn {
@@ -283,16 +282,18 @@ ul {
 }
 
 .playlist-dropdown {
-    position: absolute;
-    right: 0;
-    top: 40px;
-    background: #000;
-    border-radius: 12px;
-    padding: 8px;
+    position: fixed;
+    background: #1a1a1a;
+    border: 1px solid #444;
+    border-radius: 10px;
+    padding: 6px;
     display: none;
     flex-direction: column;
-    min-width: 160px;
-    z-index: 999;
+    min-width: 180px;
+    max-height: 240px;
+    overflow-y: auto;
+    z-index: 9999;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.6);
 }
 
 .playlist-dropdown.show {
@@ -300,9 +301,13 @@ ul {
 }
 
 .playlist-option {
-    padding: 8px;
+    padding: 9px 12px;
     cursor: pointer;
     border-radius: 6px;
+    font-size: 0.9em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .playlist-option:hover {

@@ -20,10 +20,12 @@ CREATE TABLE IF NOT EXISTS songs (
     title VARCHAR(255) NOT NULL,
     filename VARCHAR(255) NOT NULL,
     uploaded_by VARCHAR(255) NOT NULL,
+    youtube_video_id VARCHAR(20) NULL,
     plays INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_song_uploaded_by (uploaded_by),
     INDEX idx_song_title (title),
+    INDEX idx_song_yt_vid (youtube_video_id),
     FOREIGN KEY (uploaded_by) REFERENCES users(username) ON DELETE CASCADE
 );
 
@@ -31,6 +33,9 @@ CREATE TABLE IF NOT EXISTS playlists (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     user_id VARCHAR(255) NOT NULL,
+    youtube_url VARCHAR(500) NULL,
+    youtube_playlist_id VARCHAR(100) NULL,
+    last_synced DATETIME NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(username) ON DELETE CASCADE
 );
