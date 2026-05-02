@@ -83,27 +83,63 @@ button:active {
     max-width: 700px;
     margin: 25px auto;
     padding: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: stretch; 
 }
 
 .youtube-video-item {
     background: #000;
     padding: 12px;
-    margin: 6px 0;
+    margin: 6px auto;
     border-radius: 8px;
+
     display: flex;
-    justify-content: space-between;
     align-items: center;
     gap: 10px;
+
+    width: 100%;
+    max-width: 700px;
+    box-sizing: border-box;
+
     transition: background 0.2s;
+}
+
+.yt-thumb {
+    width: 120px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.yt-thumb:hover {
+    transform: scale(1.05);
+    transition: 0.2s;
 }
 
 .youtube-video-item:hover {
     background: #333;
 }
 
-.youtube-video-title {
-    flex: 1;
-    text-align: left;
+.youtube-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0; 
+}
+
+.youtube-player-container {
+    margin: 20px auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#youtube-player {
+    display: block;
+    margin: 0 auto;
 }
 
 /* ===== BOTÓN PLAY ===== */

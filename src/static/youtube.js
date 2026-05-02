@@ -84,6 +84,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // ===============================
     // SHOW RESULTS
     // ===============================
+
+    function extractId(url) {
+        const match = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/);
+        return match ? match[1] : null;
+    }
+
     function showResults(videos) {
 
         results.innerHTML = "";
@@ -93,18 +99,40 @@ document.addEventListener("DOMContentLoaded", () => {
             const li = document.createElement("li");
             li.className = "youtube-video-item";
 
+            // ===== THUMBNAIL (VIDEO) =====
+            const img = document.createElement("img");
+            const videoId = extractId(video.url);
+
+            img.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+            img.className = "yt-thumb";
+
+            // click = VIDEO
+            img.onclick = () => playYoutubeVideo(video.url, video.title);
+
+            // ===== TITLE =====
             const title = document.createElement("span");
             title.textContent = video.title;
+            title.className = "youtube-video-title";
 
+            // ===== BOTÓN AUDIO (YA EXISTENTE) =====
             const playBtn = document.createElement("button");
-            playBtn.textContent = "▶";
+            playBtn.textContent = "▶ Audio";
             playBtn.onclick = () => playYoutube(video.url, video.title);
 
+            // ===== DESCARGA (YA EXISTENTE) =====
             const downloadBtn = document.createElement("button");
             downloadBtn.textContent = "⬇ Descargar";
             downloadBtn.onclick = () => downloadYoutube(video);
 
-            li.append(title, playBtn, downloadBtn);
+            // ===== CONTENEDOR DERECHA =====
+            const actions = document.createElement("div");
+            actions.className = "youtube-actions";
+            actions.style.gap = "8px";
+
+            actions.append(playBtn, downloadBtn);
+
+            // ===== ESTRUCTURA FINAL =====
+            li.append(img, title, actions);
             results.appendChild(li);
         });
     }
@@ -157,6 +185,60 @@ document.addEventListener("DOMContentLoaded", () => {
 
         } catch (error) {
             console.error("Error al reproducir YouTube:", error);
+        }
+    }
+
+    // ===============================
+    // PLAY YOUTUBE VIDEO
+    // ===============================
+
+    async function playYoutubeVideo(url, title) {
+
+        const player = document.getElementById("youtube-player");
+
+        try {
+            const res = await fetch("/youtube_video", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url })
+            });
+
+            const data = await res.json();
+
+            console.log("VIDEO RESPONSE:", data);
+
+            if (!data.success) {
+                alert(data.error);
+                return;
+            }
+
+            // MOSTRAR REPRODUCTOR
+            player.style.display = "block";
+
+            // RESET COMPLETO (CLAVE)
+            player.pause();
+            player.removeAttribute("src");
+            player.load();
+
+            // asignar nuevo stream
+            player.src = data.stream;
+
+            // forzar carga
+            player.load();
+
+            const playPromise = player.play();
+
+            if (playPromise !== undefined) {
+                playPromise.catch(err => {
+                    console.error("Autoplay bloqueado:", err);
+                });
+            }
+
+            document.getElementById("now-playing").textContent =
+                "Reproduciendo: " + title;
+
+        } catch (err) {
+            console.error("ERROR VIDEO:", err);
         }
     }
 

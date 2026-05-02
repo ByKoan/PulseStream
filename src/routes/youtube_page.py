@@ -116,6 +116,63 @@ def youtube_audio():
 
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
+    
+    
+@youtube_bp.route("/youtube_video", methods=["POST"])
+def youtube_video():
+
+    # Si el usuario no está logueado, se bloquea el acceso
+    if "username" not in session:
+        return jsonify({"success": False, "error": "No login"}), 401
+
+    data = request.get_json()
+    url = data.get("url")
+
+    # Validamos que la URL exista
+    if not url:
+        return jsonify({"success": False, "error": "URL vacía"}), 400
+
+    try:
+        # - best[ext=mp4]/best → prioriza mp4 (mejor compatibilidad en navegadores)
+        # - quiet → sin logs en consola
+        # - noplaylist → evita procesar listas completas
+        ydl_opts = {
+            "format": "best[ext=mp4]/best",
+            "quiet": True,
+            "noplaylist": True
+        }
+
+        # download=False → solo obtiene metadata y URLs de streaming
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+
+        # Recorremos todos los formatos disponibles
+        stream_url = None
+
+        for f in info.get("formats", []):
+            if (
+                f.get("url")                 # tiene URL válida
+                and f.get("vcodec") != "none"  # contiene video
+                and f.get("acodec") != "none"  # contiene audio
+            ):
+                stream_url = f["url"]
+                break  # usamos el primero válido
+
+        # Si no encontramos formato combinado, usamos el general
+        if not stream_url:
+            stream_url = info.get("url")
+
+        # Respuesta al frontend
+        return jsonify({
+            "success": True,
+            "stream": stream_url,           # URL directa del stream
+            "title": info.get("title"),     # título del video
+            "thumbnail": info.get("thumbnail")  # miniatura
+        })
+
+    except Exception as e:
+        # Manejo de errores
+        return jsonify({"success": False, "error": str(e)})
 
 
 @youtube_bp.route("/youtube_download", methods=["POST"])
