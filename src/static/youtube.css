@@ -302,6 +302,14 @@ button:active { transform: scale(0.96); }
     z-index: 999;
 }
 
+.yt-red-btn {
+    background-color: #ff4c4c;
+}
+
+.yt-red-btn:hover {
+    background-color: #e43f3f;
+}
+
 /* =========================
    RESPONSIVE MÓVIL
 ========================= */

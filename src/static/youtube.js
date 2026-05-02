@@ -127,11 +127,13 @@ document.addEventListener("DOMContentLoaded", () => {
             // Botón audio
             const playBtn = document.createElement("button");
             playBtn.textContent = "Reproducir Audio";
+            playBtn.className = "yt-red-btn";
             playBtn.onclick = () => playYoutubeAudio(video.url, video.title);
 
             // Botón descarga
             const downloadBtn = document.createElement("button");
             downloadBtn.textContent = "⬇";
+            playBtn.className = "yt-red-btn";
             downloadBtn.onclick = () => downloadYoutube(video);
 
             const actions = document.createElement("div");
