@@ -28,7 +28,7 @@ services:
       - "8080:8080"
     depends_on:
       db:
-        condition: service_healthy 
+        condition: service_healthy
     environment:
       DB_HOST: db
       DB_USER: root
@@ -41,6 +41,31 @@ services:
         limits:
           cpus: '0.50'
           memory: 1024M
+
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.tests
+    container_name: pulsestream_tests
+    profiles:
+      - tests
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: music_db
+      BASE_MUSIC_FOLDER: /app/music
+      SECRET_KEY: test_secret_key_pytest
+    volumes:
+      - ./src/music:/app/music
+      - ./src/tests:/app/tests
+    command: >
+      pytest /app/tests -v --tb=short
+      --cov=/app --cov-report=term-missing
+      --html=/app/tests/reports/report.html --self-contained-html
 
 volumes:
   mysql_data:

@@ -12,3 +12,5 @@
 /Binarios/VisualizadorEscritorio/MusicCloudServer.spec
 /Binarios/VisualizadorAndroid/.idea/*.*
 /Binarios/VisualizadorAndroid/build/*.*
+/src/tests/__pycache__
+/src/tests/reports
