@@ -1,6 +1,6 @@
 # MusicCloudServer_TFG
 
->`Project version: 3.0`  (This value will be updated on every funcionality change in the project)
+>`Project version: 3.5`  (This value will be updated on every funcionality change in the project)
 
 > ***About this version: Final version with all funcionalities and visualizers for multiplatforms. Making Docs***
 
@@ -11,7 +11,7 @@
 
 ## Project Status:
 
-> Pending review...
+> Final version, all working.
 ## Information about the project:
 
 - The objective of this project is to get freedom enjoying your music. This is a final degree project not finished yet, where you can currently listen to music you've downloaded and uploaded with complete freedom.
@@ -65,14 +65,15 @@ docker compose up
 ```
 MusicCloudTFG/
 ├── Binarios/               # Visualizers roots and files
-├── images-progress/        # Progress Photos
 ├── src/                    # Python code files
 ├── .gitignore
 ├── BuildDocker.bat         # Deployment file on Windows
 ├── docker-compose.yml
 ├── Dockerfile
+├── Dockerfile.tests
 ├── LICENSE
 ├── README.md               # Memoria y documentación
+├── Memoria.docx
 └── requirements.txt
 ```
 
