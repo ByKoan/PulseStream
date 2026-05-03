@@ -6,6 +6,8 @@ from mysql.connector import Error
 
 
 def get_db_connection(retries=10, delay=3):
+    # Reintenta la conexión varias veces porque MySQL puede tardar en
+    # arrancar cuando el contenedor Docker acaba de iniciarse
     for i in range(retries):
         try:
             conn = mysql.connector.connect(
@@ -23,6 +25,9 @@ def get_db_connection(retries=10, delay=3):
 
 
 def create_user_db():
+    # Lee el script SQL y lo ejecuta sentencia a sentencia
+    # El script usa CREATE TABLE IF NOT EXISTS, por lo que es seguro llamarlo
+    # múltiples veces — solo actúa cuando la tabla no existe aún
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -34,6 +39,7 @@ def create_user_db():
         with open(script_path, "r", encoding="utf-8") as f:
             sql_script = f.read()
 
+        # Divide por ';' para ejecutar cada sentencia por separado
         for statement in sql_script.split(";"):
             stmt = statement.strip()
             if stmt:
@@ -48,6 +54,7 @@ def create_user_db():
 
 
 def get_user_role(username):
+    # Devuelve el rol del usuario ('user' o 'admin') o None si no existe
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
@@ -70,6 +77,8 @@ def get_user_role(username):
 
 
 def get_user_ban(username):
+    # Devuelve la fecha hasta la que el usuario está baneado,
+    # o None si no tiene ningún ban activo
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 

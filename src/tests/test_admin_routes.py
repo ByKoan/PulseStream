@@ -120,7 +120,7 @@ class TestSystemStats:
         """Un usuario normal es redirigido al index, no recibe las métricas."""
         resp = auth_client.get("/admin/system_stats", follow_redirects=True)
         assert resp.status_code == 200
-        assert resp.get_json() is None  # No devuelve JSON, sino el index HTML
+        assert resp.get_json() is None
 
 
 # ──────────────────────────────────────────────────────────────────────────────
