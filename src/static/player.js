@@ -1,60 +1,107 @@
+// =============================================================================
+// player.js — Reproductor principal de la biblioteca de canciones
+// Usado en: index.html (página principal)
+//
+// Responsabilidades:
+//   - Menú desplegable de navegación
+//   - Reproducir canciones del array global window.songs
+//   - Controles: play/pause, siguiente, anterior
+//   - Modos: shuffle (aleatorio) y loop (repetición)
+//   - Integración con la Media Session API (controles del sistema operativo)
+//   - Buscador de canciones en tiempo real (filtro por nombre)
+//   - Clic en canción de la lista para reproducirla
+//   - Añadir canciones a una playlist (dropdown por canción)
+//   - Borrar canción (con confirmación)
+//   - Contador de canciones visible en la biblioteca
+//
+// Datos de entrada:
+//   window.songs            → array de nombres de archivo de canciones (inyectado por el HTML)
+//   window.currentSongIndex → índice de la canción actualmente cargada (opcional)
+//
+// Endpoints que consume:
+//   GET  /play/<filename>       → stream de audio de la canción
+//   POST /add_to_playlist       → añade una canción a una playlist
+//   POST /delete_song           → elimina una canción de la biblioteca y del disco
+//
+// Funciones expuestas globalmente (para botones con onclick en el HTML):
+//   window.loadSong(index)
+//   window.playPause()
+//   window.handleNextClick()
+//   window.handlePreviousClick()
+//   window.toggleShuffle()
+//   window.toggleLoop()
+//   window.toggleShuffleUI()   → toggleShuffle + actualiza clase CSS del botón
+//   window.toggleLoopUI()      → toggleLoop + actualiza clase CSS del botón
+//   window.toggleMenu()
+// =============================================================================
+
 document.addEventListener("DOMContentLoaded", () => {
 
     // ===============================
-    // MENU DROPDOWN
+    // MENÚ DESPLEGABLE DE NAVEGACIÓN
     // ===============================
     window.toggleMenu = function () {
         const menu = document.getElementById("dropdownMenu");
         if (menu) menu.classList.toggle("show");
     };
 
-    document.addEventListener("click", function(e) {
+    // Cierra el menú al hacer clic fuera de él
+    document.addEventListener("click", function (e) {
         const menu = document.getElementById("dropdownMenu");
         const btn = document.querySelector(".menu-toggle");
-
         if (!menu || !btn) return;
-
         if (!menu.contains(e.target) && !btn.contains(e.target)) {
             menu.classList.remove("show");
         }
     });
 
     // ===============================
-    // SONG ACCESS
+    // ACCESO A LA LISTA DE CANCIONES
+    // window.songs es un array de nombres de archivo inyectado por el template HTML.
+    // getSongs() es un wrapper seguro que devuelve [] si aún no está inicializado.
     // ===============================
     function getSongs() {
         return window.songs || [];
     }
 
-    const player = document.getElementById("player");
-    const audioSource = document.getElementById("audioSource");
-    const currentSongTitle = document.getElementById("currentSongTitle");
+    // Referencias a los elementos del DOM del reproductor
+    const player = document.getElementById("player");           // Elemento <audio>
+    const audioSource = document.getElementById("audioSource"); // Elemento <source> dentro del <audio>
+    const currentSongTitle = document.getElementById("currentSongTitle"); // Texto del título en la UI
 
+    // Estado del reproductor
     let currentSongIndex = window.currentSongIndex || 0;
-    let shuffle = false;
-    let loop = false;
+    let shuffle = false; // Si true, la siguiente canción se elige al azar
+    let loop = false;    // Si true, la canción actual se repite al terminar
 
     // ===============================
-    // LOAD SONG
+    // CARGAR Y REPRODUCIR CANCIÓN
+    // Recibe el índice en window.songs, actualiza la fuente del <audio>,
+    // lo carga, lo reproduce y actualiza la UI (título + pestaña del navegador).
+    // También configura la Media Session API para los controles del SO/auriculares.
     // ===============================
     function loadSong(index) {
         const songs = getSongs();
         if (!songs.length || !player || !audioSource) return;
 
+        // Wrapping circular: si el índice se pasa de los límites, vuelve al otro extremo
         if (index < 0) index = songs.length - 1;
         if (index >= songs.length) index = 0;
 
         currentSongIndex = index;
         const song = songs[currentSongIndex];
 
+        // Asigna la URL del stream de audio y fuerza la recarga del elemento
         audioSource.src = "/play/" + encodeURIComponent(song);
         player.load();
-        player.play().catch(() => {});
+        player.play().catch(() => {}); // .catch vacío: evita error si el autoplay está bloqueado
 
+        // Actualiza el título visible en la UI y en la pestaña del navegador
         if (currentSongTitle) currentSongTitle.textContent = song;
         document.title = song;
 
-        // Media Session API
+        // Media Session API: permite controlar la reproducción desde el SO,
+        // auriculares Bluetooth, pantalla de bloqueo, etc.
         if ("mediaSession" in navigator) {
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: song,
@@ -70,37 +117,48 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ===============================
-    // CONTROLS
+    // CONTROLES DE REPRODUCCIÓN
     // ===============================
+
+    // Alterna play/pause según el estado actual del elemento <audio>
     function playPause() {
         if (!player) return;
         player.paused ? player.play() : player.pause();
     }
 
+    // Siguiente canción: si shuffle está activo elige una al azar (distinta a la actual)
     function handleNextClick() {
         const songs = getSongs();
         if (!songs.length) return;
 
         if (shuffle) {
             let i;
-            do { i = Math.floor(Math.random() * songs.length); } 
+            // Asegura que no se repita la misma canción si hay más de una
+            do { i = Math.floor(Math.random() * songs.length); }
             while (i === currentSongIndex && songs.length > 1);
             currentSongIndex = i;
         } else {
+            // Avance secuencial con wrapping circular
             currentSongIndex = (currentSongIndex + 1) % songs.length;
         }
         loadSong(currentSongIndex);
     }
 
+    // Canción anterior:
+    //   - Si la canción lleva más de 3 segundos → reinicia desde el principio
+    //   - Si lleva menos de 3 segundos → va a la canción anterior (o aleatoria con shuffle)
     function handlePreviousClick() {
         const songs = getSongs();
         if (!songs.length || !player) return;
 
-        if (player.currentTime > 3) { player.currentTime = 0; return; }
+        if (player.currentTime > 3) {
+            player.currentTime = 0;
+            return;
+        }
 
         if (shuffle) {
             let i;
-            do { i = Math.floor(Math.random() * songs.length); } 
+            do { i = Math.floor(Math.random() * songs.length); }
             while (i === currentSongIndex && songs.length > 1);
             currentSongIndex = i;
         } else {
@@ -111,41 +169,41 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ===============================
-    // TOGGLE UI CONTROLS
+    // MODOS: SHUFFLE Y LOOP
+    // Las funciones "UI" actualizan también la clase CSS "active" del botón
+    // para reflejar visualmente el estado activo/inactivo.
     // ===============================
 
-    window.toggleShuffleUI = function () {
-        toggleShuffle();
-
-        const toggle = document.getElementById("shuffleToggle");
-        if (toggle) {
-            toggle.classList.toggle("active", shuffle);
-        }
-    };
-
-    window.toggleLoopUI = function () {
-        toggleLoop();
-
-        const toggle = document.getElementById("loopToggle");
-        if (toggle) {
-            toggle.classList.toggle("active", loop);
-        }
-    };
-
-    // ===============================
-    // TOGGLE LOGIC (REAL STATE)
-    // ===============================
+    // Activa/desactiva el modo aleatorio (lógica pura, sin UI)
     function toggleShuffle() {
         shuffle = !shuffle;
     }
 
+    // Activa/desactiva la repetición (lógica pura, sin UI)
+    // También asigna player.loop para que el <audio> repita nativamente
     function toggleLoop() {
         loop = !loop;
         if (player) player.loop = loop;
     }
 
+    // Versión con actualización visual del botón (llamada desde onclick en el HTML)
+    window.toggleShuffleUI = function () {
+        toggleShuffle();
+        const toggle = document.getElementById("shuffleToggle");
+        if (toggle) toggle.classList.toggle("active", shuffle);
+    };
+
+    window.toggleLoopUI = function () {
+        toggleLoop();
+        const toggle = document.getElementById("loopToggle");
+        if (toggle) toggle.classList.toggle("active", loop);
+    };
+
     // ===============================
-    // SEARCH
+    // BUSCADOR DE CANCIONES (filtro en tiempo real)
+    // Filtra las canciones visibles en #songList según el texto introducido.
+    // No hace ninguna petición al servidor: opera solo sobre el DOM.
+    // El botón "X" (resetSearch) borra el filtro y muestra todas de nuevo.
     // ===============================
     const searchForm = document.getElementById("searchForm");
     const searchInput = document.getElementById("searchInput");
@@ -154,13 +212,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (searchForm && searchInput && songList) {
         searchForm.addEventListener("submit", e => {
-            e.preventDefault();
+            e.preventDefault(); // Evita el envío del formulario al servidor
             const query = searchInput.value.toLowerCase();
             songList.querySelectorAll(".song-item").forEach(item => {
                 const title = item.querySelector(".song-title")?.textContent.toLowerCase() || "";
+                // Muestra el item si el título contiene la búsqueda, lo oculta si no
                 item.style.display = title.includes(query) ? "" : "none";
             });
-            updateCounter();
+            updateCounter(); // Actualiza el contador con el número de canciones visibles
         });
     }
 
@@ -173,83 +232,81 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ===============================
-    // CLICK SONG
+    // CLIC EN CANCIÓN DE LA LISTA
+    // Escucha clics dentro de #songList y carga la canción cuyo .song-title fue pulsado.
+    // Usa event delegation: un solo listener en el contenedor gestiona todos los items.
     // ===============================
     if (songList) {
         songList.addEventListener("click", e => {
             const titleEl = e.target.closest(".song-title");
             if (!titleEl) return;
+            // Calcula el índice de la canción dentro de la lista de hijos del songList
             const index = Array.from(songList.children).indexOf(titleEl.closest(".song-item"));
             if (index !== -1) loadSong(index);
         });
     }
 
     // ===============================
-    // ADD TO PLAYLIST
+    // AÑADIR CANCIÓN A PLAYLIST
+    // Cada canción tiene un wrapper .playlist-wrapper con un botón .add-btn
+    // que abre un dropdown con las playlists disponibles.
+    // Al hacer clic en una opción del dropdown, se envía la canción al backend.
+    // Solo puede haber un dropdown abierto a la vez.
     // ===============================
-
     document.querySelectorAll(".playlist-wrapper").forEach(wrapper => {
-
         const btn = wrapper.querySelector(".add-btn");
         const dropdown = wrapper.querySelector(".playlist-dropdown");
-
         if (!btn || !dropdown) return;
 
         btn.addEventListener("click", e => {
-            e.stopPropagation();
+            e.stopPropagation(); // Evita que el clic cierre el dropdown inmediatamente
 
-            // cerrar otros abiertos
+            // Cierra cualquier otro dropdown abierto antes de abrir el actual
             document.querySelectorAll(".playlist-dropdown")
-                .forEach(d => {
-                    if (d !== dropdown) d.classList.remove("show");
-                });
+                .forEach(d => { if (d !== dropdown) d.classList.remove("show"); });
 
             dropdown.classList.toggle("show");
         });
 
+        // Cada opción del dropdown representa una playlist
         dropdown.querySelectorAll(".playlist-option").forEach(option => {
-
             option.addEventListener("click", async () => {
-
                 const playlistId = option.dataset.playlist;
                 const songItem = wrapper.closest(".song-item");
                 const filename = songItem.dataset.filename;
 
                 try {
+                    // POST /add_to_playlist
                     const res = await fetch("/add_to_playlist", {
                         method: "POST",
-                        headers: {"Content-Type": "application/json"},
-                        body: JSON.stringify({
-                            filename,
-                            playlist_id: playlistId
-                        })
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ filename, playlist_id: playlistId })
                     });
-
                     const data = await res.json();
-
                     alert(data.success
                         ? `"${filename}" añadida`
-                        : `Error: ${data.error}`);
-
+                        : `Error: ${data.error}`
+                    );
                 } catch (err) {
                     alert("Error: " + err);
                 }
 
-                dropdown.classList.remove("show");
+                dropdown.classList.remove("show"); // Cierra el dropdown tras la acción
             });
-
         });
-
     });
 
-    // cerrar al hacer click fuera
+    // Cierra todos los dropdowns al hacer clic en cualquier otro sitio de la página
     document.addEventListener("click", () => {
         document.querySelectorAll(".playlist-dropdown")
             .forEach(d => d.classList.remove("show"));
     });
 
     // ===============================
-    // DELETE SONG
+    // ELIMINAR CANCIÓN
+    // Escucha clics en botones .delete-song-btn dentro de #songList.
+    // Pide confirmación, envía la petición al backend y elimina el elemento del DOM
+    // si el servidor confirma el éxito. También actualiza window.songs y el contador.
     // ===============================
     if (songList) {
         songList.addEventListener("click", async e => {
@@ -261,15 +318,16 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!confirm(`¿Borrar "${filename}"?`)) return;
 
             try {
+                // POST /delete_song
                 const res = await fetch("/delete_song", {
                     method: "POST",
-                    headers: {"Content-Type": "application/json"},
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ filename })
                 });
                 const data = await res.json();
                 if (data.success) {
-                    btn.closest(".song-item")?.remove();
-                    window.songs = getSongs().filter(s => s !== filename);
+                    btn.closest(".song-item")?.remove(); // Elimina el elemento del DOM
+                    window.songs = getSongs().filter(s => s !== filename); // Actualiza el array global
                     updateCounter();
                     alert(`"${filename}" borrada correctamente`);
                 } else {
@@ -282,7 +340,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ===============================
-    // COUNTER
+    // CONTADOR DE CANCIONES
+    // Muestra "X canción(es) en tu biblioteca" en el footer de la lista.
+    // Cuenta solo los items visibles (excluye los ocultados por el buscador).
     // ===============================
     function updateCounter() {
         const footer = document.querySelector(".song-count-footer");
@@ -294,7 +354,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ===============================
-    // EXPORT FUNCTIONS
+    // EXPORTAR FUNCIONES GLOBALES
+    // Las expone en window para que el HTML pueda llamarlas con onclick="..."
+    // y para que otros scripts (ej: youtube.js) puedan acceder al reproductor.
     // ===============================
     window.loadSong = loadSong;
     window.playPause = playPause;
@@ -304,9 +366,9 @@ document.addEventListener("DOMContentLoaded", () => {
     window.toggleLoop = toggleLoop;
 
     // ===============================
-    // INITIAL LOAD
+    // INICIALIZACIÓN
+    // Carga la primera canción al arrancar y actualiza el contador inicial.
     // ===============================
     if (player && getSongs().length > 0) loadSong(currentSongIndex);
     updateCounter();
-
 });

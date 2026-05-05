@@ -203,6 +203,9 @@ def youtube_download():
             "outtmpl": os.path.join(user_folder, "%(title)s.%(ext)s"),
             "quiet": True,
             "noplaylist": True,
+            # ignoreerrors: permite detectar vídeos privados/no disponibles
+            # sin lanzar excepción (devuelve None en su lugar)
+            "ignoreerrors": True,
             "postprocessors": [{
                 "key": "FFmpegExtractAudio",
                 "preferredcodec": "mp3",
@@ -212,7 +215,23 @@ def youtube_download():
 
         # Descargamos el audio desde YouTube
         with YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=True)
+            try:
+                info = ydl.extract_info(url, download=True)
+            except yt_dlp.utils.DownloadError as e:
+                err = str(e).lower()
+                if "private" in err or "unavailable" in err or "not available" in err:
+                    return jsonify({"success": False, "error": "Este vídeo es privado o no está disponible"}), 200
+                raise
+
+            # Con ignoreerrors, un vídeo privado devuelve None en lugar de lanzar excepción
+            if not info:
+                return jsonify({"success": False, "error": "Este vídeo es privado o no está disponible"}), 200
+
+            # Comprobar título de vídeo no disponible
+            if info.get("title") in ("[Private video]", "[Deleted video]"):
+                return jsonify({"success": False, "error": f"Vídeo no disponible: {info.get('title')}"}), 200
+
+            # Usar prepare_filename para obtener el nombre real sanitizado por yt-dlp
             filename = ydl.prepare_filename(info)
 
         # Ajustamos extensión final a mp3
@@ -252,3 +271,42 @@ def youtube_download():
     except Exception as e:
         # Manejo de errores generales
         return jsonify({"success": False, "error": str(e)})
+
+@youtube_bp.route("/add_song_to_db", methods=["POST"])
+def add_song_to_db():
+    """
+    Registra en la BD una canción ya descargada por youtube_download.
+    El frontend llama a este endpoint justo después de que la descarga
+    termina con éxito para asegurarse de que el registro existe.
+    Si la canción ya estaba insertada por youtube_download, el INSERT IGNORE
+    la ignora sin error.
+    """
+    if "username" not in session:
+        return jsonify({"success": False, "error": "No has iniciado sesión"}), 401
+
+    data = request.get_json()
+    filename = data.get("filename")
+    title = data.get("title") or filename
+
+    if not filename:
+        return jsonify({"success": False, "error": "Falta el nombre de archivo"}), 400
+
+    username = session["username"]
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        # INSERT IGNORE: no falla si ya existe (youtube_download lo insertó antes)
+        cursor.execute(
+            "INSERT IGNORE INTO songs (title, filename, uploaded_by) VALUES (%s, %s, %s)",
+            (title, filename, username)
+        )
+        conn.commit()
+        return jsonify({"success": True})
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"success": False, "error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()

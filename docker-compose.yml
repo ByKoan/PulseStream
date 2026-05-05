@@ -3,11 +3,13 @@ services:
     image: mysql:8.0
     container_name: mysql_music_db
     restart: always
+    networks:
+      - pulsestream
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: music_db
     ports:
-      - "50000:3306"
+      - "50000:3306" # Use a random por to acces MySQL to avoid problems with connection 
     volumes:
       - mysql_data:/var/lib/mysql
     command: --default-authentication-plugin=mysql_native_password
@@ -18,12 +20,15 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'
-          memory: 1024M
+          cpus: '2'
+          memory: 2048M
 
   webserver:
     build: .
     container_name: webserver
+    restart: always
+    networks:
+      - pulsestream
     ports:
       - "8080:8080"
     depends_on:
@@ -39,19 +44,24 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'
-          memory: 1024M
+          cpus: '4'
+          memory: 4096M
 
   tests:
     build:
       context: .
       dockerfile: Dockerfile.tests
+    networks:
+      - pulsestream
     container_name: pulsestream_tests
+    restart: no
     profiles:
       - tests
     depends_on:
       db:
         condition: service_healthy
+      webserver:
+        condition: service_started
     environment:
       DB_HOST: db
       DB_USER: root
@@ -66,6 +76,15 @@ services:
       pytest /app/tests -v --tb=short
       --cov=/app --cov-report=term-missing
       --html=/app/tests/reports/report.html --self-contained-html
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
 
 volumes:
   mysql_data:
+
+networks:
+  pulsestream:
+    driver: bridge

@@ -238,13 +238,20 @@ def import_youtube_playlist():
 
     try:
         # Obtiene info de la playlist sin descargar
-        with yt_dlp.YoutubeDL({"quiet": True}) as ydl:
+        # ignoreerrors: no lanza excepción si algún vídeo es privado/eliminado
+        # extract_flat: solo obtiene metadatos superficiales (título, ID), sin procesar cada vídeo
+        with yt_dlp.YoutubeDL({"quiet": True, "ignoreerrors": True, "extract_flat": True}) as ydl:
             info = ydl.extract_info(youtube_url, download=False)
 
         playlist_title = info.get("title", "YouTube Playlist")
 
+        # Total de vídeos conocido ya desde el extract_flat (puede incluir privados)
+        total_videos = len(info.get("entries") or [])
+
         # Extraer el ID de la playlist de YouTube para sincronizaciones futuras
         yt_playlist_id = info.get("id", None)
+
+        print(f"[playlist] '{playlist_title}' — {total_videos} vídeos encontrados")
 
         # Crea playlist en BD guardando la URL y el ID de YouTube
         cursor.execute("""
@@ -258,17 +265,39 @@ def import_youtube_playlist():
         user_music_folder = os.path.join(Config.BASE_MUSIC_FOLDER, username)
         os.makedirs(user_music_folder, exist_ok=True)
 
+        # --- Contador de progreso compartido entre el hook y el bucle ---
+        progress_state = {"current": 0, "current_title": ""}
+
+        def progress_hook(d):
+            """
+            yt-dlp llama a este hook en cada evento de descarga.
+            Cuando empieza un nuevo vídeo ('downloading') lo registramos
+            para poder mostrar el título en consola.
+            """
+            if d.get("status") == "downloading":
+                title = d.get("info_dict", {}).get("title", "desconocido")
+                if title != progress_state["current_title"]:
+                    progress_state["current"] += 1
+                    progress_state["current_title"] = title
+                    idx = progress_state["current"]
+                    pct = f"{idx}/{total_videos}" if total_videos else str(idx)
+                    print(f"[playlist] [{pct}] Descargando: {title}")
+
         # Opciones de descarga
         ydl_opts = {
             "format": "bestaudio/best",
             "outtmpl": os.path.join(user_music_folder, "%(title)s.%(ext)s"),
             "noplaylist": False,
+            # ignoreerrors: salta vídeos privados/eliminados/no disponibles
+            # sin detener la descarga del resto de la playlist
+            "ignoreerrors": True,
             "postprocessors": [{
                 "key": "FFmpegExtractAudio",
                 "preferredcodec": "mp3",
                 "preferredquality": "192",
             }],
             "quiet": True,
+            "progress_hooks": [progress_hook],
         }
 
         downloaded = 0
@@ -277,16 +306,34 @@ def import_youtube_playlist():
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
 
             info = ydl.extract_info(youtube_url, download=True)
+            # Con ignoreerrors, si la playlist entera falla info puede ser None
+            if not info:
+                raise Exception("No se pudo obtener información de la playlist")
             entries = info.get("entries", [])
 
             for entry in entries:
 
+                # None = vídeo privado, eliminado o no disponible (ignoreerrors lo marca así)
                 if not entry:
                     continue
 
                 title = entry.get("title")
                 video_id = entry.get("id") or entry.get("webpage_url_basename")
-                filename = f"{title}.mp3"
+
+                # Vídeos marcados como no disponibles pueden tener título "[Private video]"
+                # o "[Deleted video]" — los saltamos para no guardar basura en la BD
+                if title in ("[Private video]", "[Deleted video]", None):
+                    print(f"[playlist] ⚠ Saltando vídeo no disponible: {video_id}")
+                    continue
+
+                # Usar prepare_filename para obtener el nombre real que yt-dlp
+                # usó al guardar en disco (aplica su propio sanitizado de caracteres)
+                try:
+                    raw_path = ydl.prepare_filename(entry)
+                except Exception:
+                    continue
+                base = os.path.splitext(raw_path)[0]
+                filename = os.path.basename(base + ".mp3")
 
                 # Validación
                 if not title or not allowed_file(filename):
@@ -316,6 +363,7 @@ def import_youtube_playlist():
                             UPDATE songs SET youtube_video_id = %s
                             WHERE id = %s AND (youtube_video_id IS NULL OR youtube_video_id = '')
                         """, (video_id, song_id))
+                    print(f"[playlist] ✓ Ya existía en BD: {title}")
                 else:
                     # Inserta nueva canción con youtube_video_id
                     cursor.execute("""
@@ -325,6 +373,7 @@ def import_youtube_playlist():
 
                     song_id = cursor.lastrowid
                     downloaded += 1
+                    print(f"[playlist] ✔ Guardada en BD [{downloaded} nueva(s)]: {title}")
 
                 # Añade canción a la playlist
                 cursor.execute("""
@@ -334,6 +383,8 @@ def import_youtube_playlist():
 
         conn.commit()
 
+        print(f"[playlist] ✅ Importación completada: '{playlist_title}' — {downloaded} canciones nuevas de {total_videos} vídeos")
+
         return jsonify({
             "success": True,
             "playlist_id": playlist_id,
@@ -342,7 +393,7 @@ def import_youtube_playlist():
 
     except Exception as e:
         conn.rollback()
-        print("Error importando playlist.")
+        print(f"[playlist] ❌ Error importando playlist: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
     finally:
@@ -564,15 +615,29 @@ def sync_youtube_playlist():
                 try:
                     print(f"[sync] Descargando {vid_id}")
 
-                    # Descargar audio
+                    # Descargar audio — ignoreerrors ya está activo en ydl_opts_dl,
+                    # pero si el vídeo es privado extract_info devuelve None
                     with yt_dlp.YoutubeDL(ydl_opts_dl) as ydl:
                         dl_info = ydl.extract_info(video_url, download=True)
+                        # Obtener nombre real sanitizado por yt-dlp
+                        if dl_info:
+                            raw_path = ydl.prepare_filename(dl_info)
+                            base = os.path.splitext(raw_path)[0]
+                            real_filename = os.path.basename(base + ".mp3")
 
+                    # None = vídeo privado, eliminado o no disponible → saltar
                     if not dl_info:
+                        print(f"[sync] Saltando {vid_id}: vídeo privado o no disponible")
                         continue
 
                     title = dl_info.get("title") or yt_map.get(vid_id, vid_id)
-                    filename = f"{title}.mp3"
+
+                    # Título de vídeo no disponible → saltar
+                    if title in ("[Private video]", "[Deleted video]"):
+                        print(f"[sync] Saltando {vid_id}: {title}")
+                        continue
+
+                    filename = real_filename
 
                     # =========================
                     # Verificar si ya existe en BD
@@ -658,5 +723,29 @@ def sync_youtube_playlist():
 
     finally:
         # Cerrar conexión
+        cursor.close()
+        conn.close()
+
+# =========================
+# API: contador de playlists del usuario (polling desde playlists.js)
+# =========================
+@playlist_bp.route("/api/playlist_count")
+def playlist_count():
+    if "user_id" not in session:
+        return jsonify({"count": 0}), 401
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        cursor.execute(
+            "SELECT COUNT(*) AS total FROM playlists WHERE user_id = %s",
+            (session["user_id"],)
+        )
+        row = cursor.fetchone()
+        return jsonify({"count": row["total"] if row else 0})
+    except Exception as e:
+        return jsonify({"count": 0, "error": str(e)}), 500
+    finally:
         cursor.close()
         conn.close()

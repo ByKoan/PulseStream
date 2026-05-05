@@ -1,28 +1,57 @@
-import os
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash
-from werkzeug.utils import secure_filename
-from services.music_service import get_user_folder
-from utils.file_utils import allowed_file
-from database.db import get_db_connection
+# =============================================================================
+# upload_routes.py — Subida de canciones a la biblioteca del usuario
+# Usado en: upload.html, upload.js
+#
+# Responsabilidades:
+#   - Proteger la ruta con login obligatorio (decorador login_required)
+#   - Aceptar uno o varios archivos de audio en una misma petición
+#   - Validar extensiones permitidas antes de guardar
+#   - Sanitizar nombres de archivo para evitar problemas de seguridad
+#   - Guardar el archivo en la carpeta del usuario en disco
+#   - Insertar la canción en la BD y actualizar el contador del usuario
+#
+# Endpoints que expone:
+#   GET  /upload  → muestra el formulario de subida
+#   POST /upload  → procesa y guarda los archivos recibidos
+# =============================================================================
 
+import os  # Manejo de rutas y carpetas del sistema de archivos
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from werkzeug.utils import secure_filename      # Sanitiza nombres de archivo
+from services.music_service import get_user_folder  # Devuelve la carpeta del usuario
+from utils.file_utils import allowed_file           # Valida extensiones permitidas
+from database.db import get_db_connection           # Conexión a la base de datos
+
+# Blueprint de subida de archivos
 upload_bp = Blueprint(
     "upload",
     __name__,
     template_folder="../templates"
 )
 
-# Decorador para proteger rutas que requieren login
+
+# ===============================
+# DECORADOR: LOGIN REQUERIDO
+# Redirige al login si el usuario no tiene sesión activa.
+# Se aplica a todas las rutas de este blueprint que lo necesiten.
+# ===============================
 def login_required(f):
     from functools import wraps
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # Si no hay usuario en sesión, redirigimos al login
+        # Si no hay usuario en sesión → redirige al login
         if "user_id" not in session:
             return redirect(url_for("auth.login"))
         return f(*args, **kwargs)
     return decorated_function
 
 
+# ===============================
+# SUBIDA DE ARCHIVO(S)
+# GET  → muestra el formulario de subida
+# POST → procesa los archivos recibidos, los guarda en disco y en la BD
+# Acepta múltiples archivos en una sola petición.
+# ===============================
 @upload_bp.route("/upload", methods=["GET", "POST"])
 @login_required
 def upload_file():
@@ -30,66 +59,66 @@ def upload_file():
     # Obtenemos el usuario actual desde la sesión
     username = session["user_id"]
 
-    # Obtenemos la carpeta específica del usuario
+    # Obtenemos la carpeta específica del usuario en disco
     user_folder = get_user_folder(username)
 
-    # Aseguramos que la carpeta exista
+    # Creamos la carpeta si no existe (exist_ok evita error si ya existe)
     os.makedirs(user_folder, exist_ok=True)
 
-    # Si el método es POST, significa que se están subiendo archivos
+    # Si el método es POST → procesamos los archivos enviados
     if request.method == "POST":
 
-        # Comprobamos que la petición contiene archivos
+        # Comprobamos que la petición contiene el campo "file"
         if "file" not in request.files:
             flash("No se envió ningún archivo", "error")
             return redirect(request.url)
 
-        # Obtenemos la lista de archivos (permite múltiples uploads)
+        # Obtenemos la lista de archivos (permite múltiples uploads a la vez)
         files = request.files.getlist("file")
 
-        # Si no hay archivos seleccionados
+        # Si la lista está vacía → error
         if not files:
             flash("No seleccionaste ningún archivo", "error")
             return redirect(request.url)
 
         # Conexión a la base de datos
-        conn = get_db_connection()
+        conn   = get_db_connection()
         cursor = conn.cursor()
 
-        uploaded = False  # Bandera para saber si se subió algo correctamente
+        uploaded = False  # Bandera: se pone a True si al menos un archivo se sube bien
 
-        # Iteramos sobre todos los archivos recibidos
+        # ===============================
+        # PROCESAR CADA ARCHIVO
+        # ===============================
         for file in files:
 
-            # Ignorar archivos sin nombre
+            # Ignorar entradas vacías (usuario no seleccionó nada)
             if file.filename == "":
                 continue
 
-            # Validar extensión permitida
+            # Validar que la extensión esté en la lista permitida
             if not allowed_file(file.filename):
                 flash(f"Formato no permitido: {file.filename}", "error")
                 continue
 
-            # Sanitizamos el nombre del archivo para evitar problemas de seguridad
-            filename = secure_filename(file.filename)
-
-            # Construimos la ruta final del archivo
-            file_path = os.path.join(user_folder, filename)
+            # Sanitizamos el nombre para evitar path traversal y caracteres peligrosos
+            filename  = secure_filename(file.filename)
+            file_path = os.path.join(user_folder, filename)  # Ruta completa en disco
 
             try:
-                # Guardamos el archivo en el sistema
+                # Guarda el archivo en disco
                 file.save(file_path)
 
-                # Insertamos la canción en la base de datos
+                # Inserta la canción en la base de datos
                 cursor.execute(
                     """
                     INSERT INTO songs (title, filename, uploaded_by, plays)
                     VALUES (%s, %s, %s, %s)
                     """,
-                    (filename, filename, username, 0)
+                    (filename, filename, username, 0)   # plays empieza en 0
                 )
 
-                # Actualizamos el contador de canciones del usuario
+                # Incrementa el contador de canciones del usuario
                 cursor.execute(
                     """
                     UPDATE users
@@ -99,10 +128,10 @@ def upload_file():
                     (username,)
                 )
 
-                uploaded = True  # Marcamos que al menos una canción se subió
+                uploaded = True  # Al menos una canción subida correctamente
 
             except Exception as e:
-                # Si algo falla, revertimos cambios y mostramos error
+                # Algo falló → revertimos cambios de este archivo y mostramos error
                 conn.rollback()
                 flash(f"Error subiendo {filename}: {str(e)}", "error")
 
@@ -111,7 +140,9 @@ def upload_file():
         cursor.close()
         conn.close()
 
-        # Mensajes finales según resultado
+        # ===============================
+        # MENSAJES FINALES
+        # ===============================
         if uploaded:
             flash("Canciones subidas correctamente", "success")
             return redirect(url_for("music.index"))
@@ -119,5 +150,5 @@ def upload_file():
         flash("No se subió ninguna canción", "error")
         return redirect(request.url)
 
-    # Si es GET, mostramos la página de subida
+    # Si es GET → mostramos la página de subida
     return render_template("upload.html")
