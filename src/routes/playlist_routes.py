@@ -1,3 +1,29 @@
+# =============================================================================
+# playlist_routes.py — Gestión completa de playlists del usuario
+# Usado en: playlists.html, playlists.js, playlist_view.html, playlist_player.js
+#
+# Responsabilidades:
+#   - Mostrar todas las playlists del usuario autenticado
+#   - Crear, renombrar y eliminar playlists
+#   - Ver el contenido (canciones) de una playlist concreta
+#   - Importar una playlist completa desde YouTube (descarga audio en MP3)
+#   - Sincronizar una playlist importada con su fuente de YouTube
+#     (añade nuevos vídeos y elimina los que ya no existen)
+#   - Reproducir canciones almacenadas localmente en la carpeta del usuario
+#   - Exponer un contador de playlists para polling desde el frontend
+#
+# Endpoints que expone:
+#   GET  /playlists                    → lista todas las playlists del usuario
+#   POST /create_playlist              → crea una nueva playlist (formulario)
+#   GET  /playlist/<id>                → muestra canciones de una playlist
+#   POST /delete_playlist              → elimina playlist y sus relaciones (JSON)
+#   POST /rename_playlist              → renombra una playlist (JSON)
+#   POST /import_youtube_playlist      → importa playlist de YouTube (JSON)
+#   POST /sync_youtube_playlist        → sincroniza playlist con YouTube (JSON)
+#   GET  /play/<filename>              → sirve el audio de una canción local
+#   GET  /api/playlist_count           → devuelve el número de playlists (JSON)
+# =============================================================================
+
 from flask import Blueprint, jsonify, render_template, request, session, redirect, url_for, send_from_directory, abort
 from database.db import get_db_connection  # Conexión a la base de datos
 
@@ -13,6 +39,9 @@ playlist_bp = Blueprint("playlist", __name__)
 
 # =========================
 # Mostrar playlists
+# GET /playlists
+# Requiere sesión activa. Obtiene todas las playlists del usuario
+# y las pasa a la plantilla playlists.html.
 # =========================
 @playlist_bp.route("/playlists")
 def playlists():
@@ -41,6 +70,10 @@ def playlists():
 
 # =========================
 # Crear playlist
+# POST /create_playlist
+# Recibe el nombre desde un formulario HTML.
+# Inserta la playlist en la BD asociada al usuario en sesión.
+# Redirige a /playlists tras la creación.
 # =========================
 @playlist_bp.route("/create_playlist", methods=["POST"])
 def create_playlist():
@@ -73,6 +106,10 @@ def create_playlist():
 
 # =========================
 # Ver una playlist concreta
+# GET /playlist/<playlist_id>
+# Verifica que la playlist pertenece al usuario en sesión.
+# Obtiene las canciones mediante JOIN entre playlist_songs y songs.
+# Renderiza playlist_view.html con los datos de la playlist y la lista de ficheros.
 # =========================
 @playlist_bp.route("/playlist/<int:playlist_id>")
 def view_playlist(playlist_id):
@@ -114,6 +151,11 @@ def view_playlist(playlist_id):
 
 # =========================
 # Eliminar playlist
+# POST /delete_playlist
+# Recibe JSON con playlist_id.
+# Verifica propiedad, elimina primero las relaciones en playlist_songs
+# y después la playlist de la tabla playlists.
+# Devuelve JSON {success, error?}.
 # =========================
 @playlist_bp.route("/delete_playlist", methods=["POST"])
 def delete_playlist():
@@ -167,6 +209,10 @@ def delete_playlist():
 
 # =========================
 # Renombrar playlist
+# POST /rename_playlist
+# Recibe JSON con playlist_id y name.
+# Verifica propiedad antes de aplicar el UPDATE.
+# Devuelve JSON {success, error?}.
 # =========================
 @playlist_bp.route("/rename_playlist", methods=["POST"])
 def rename_playlist():
@@ -215,6 +261,16 @@ def rename_playlist():
 
 # =========================
 # Importar playlist de YouTube
+# POST /import_youtube_playlist
+# Recibe JSON con url (URL de la playlist de YouTube).
+# Flujo:
+#   1. Extrae metadatos de la playlist sin descargar (extract_flat).
+#   2. Crea la playlist en BD guardando la URL y el ID de YouTube.
+#   3. Descarga cada vídeo como MP3 en la carpeta del usuario.
+#   4. Por cada vídeo: busca si ya existe en BD (por video_id o filename),
+#      inserta si es nuevo y lo asocia a la playlist en playlist_songs.
+# Vídeos privados, eliminados o no disponibles se omiten sin detener el proceso.
+# Devuelve JSON {success, playlist_id, downloaded, error?}.
 # =========================
 @playlist_bp.route("/import_youtube_playlist", methods=["POST"])
 def import_youtube_playlist():
@@ -403,6 +459,10 @@ def import_youtube_playlist():
 
 # =========================
 # Reproducir canción desde playlist
+# GET /play/<filename>
+# Requiere sesión activa con username.
+# Resuelve la ruta física en la carpeta del usuario y sirve el fichero de audio.
+# Devuelve 401 si no hay sesión, 404 si el archivo no existe en disco.
 # =========================
 @playlist_bp.route("/play/<path:filename>")
 def play_song(filename):
@@ -431,6 +491,20 @@ def play_song(filename):
 
 # =========================
 # Sincronizar playlist con YouTube (aplica cambios)
+# POST /sync_youtube_playlist
+# Recibe JSON con playlist_id.
+# Flujo de sincronización:
+#   1. Obtiene metadatos actuales de YouTube (extract_flat, sin descargar).
+#   2. Aplana sublistas recursivamente para soportar playlists anidadas.
+#   3. Construye un mapa video_id → título de los vídeos de YouTube.
+#   4. BACKFILL: intenta rellenar youtube_video_id faltante en BD usando
+#      coincidencia de título normalizado.
+#   5. Elimina de playlist_songs los vídeos que ya no están en YouTube.
+#   6. Descarga y registra en BD los vídeos nuevos que YouTube tiene
+#      pero no existen localmente (busca por video_id y luego por filename).
+#   7. Actualiza last_synced en la playlist.
+# Solo funciona en playlists importadas desde YouTube (tienen youtube_url).
+# Devuelve JSON {success, added, removed, message, error?}.
 # =========================
 @playlist_bp.route("/sync_youtube_playlist", methods=["POST"])
 def sync_youtube_playlist():
@@ -726,8 +800,12 @@ def sync_youtube_playlist():
         cursor.close()
         conn.close()
 
+
 # =========================
 # API: contador de playlists del usuario (polling desde playlists.js)
+# GET /api/playlist_count
+# Devuelve JSON {count} con el número total de playlists del usuario.
+# Devuelve count=0 con código 401 si no hay sesión activa.
 # =========================
 @playlist_bp.route("/api/playlist_count")
 def playlist_count():

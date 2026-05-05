@@ -1,3 +1,26 @@
+# =============================================================================
+# youtube_page.py — Búsqueda, reproducción y descarga de contenido de YouTube
+# Usado en: youtube.html, youtube.js
+#
+# Responsabilidades:
+#   - Renderizar la página del buscador de YouTube (protegida por sesión)
+#   - Buscar vídeos en YouTube y devolver los 10 primeros resultados
+#   - Obtener la URL de streaming de audio de un vídeo (sin descargarlo)
+#   - Obtener la URL de streaming de vídeo+audio en MP4 (sin descargarlo)
+#   - Descargar el audio de un vídeo como MP3 en la carpeta del usuario
+#     e insertarlo en la tabla songs de la BD
+#   - Registrar en BD una canción ya descargada por el frontend
+#     (inserción de seguridad tras confirmación de descarga)
+#
+# Endpoints que expone:
+#   GET  /youtube_page        → renderiza youtube.html
+#   POST /youtube_search      → busca vídeos (JSON: {query}) → {results}
+#   POST /youtube_audio       → URL de stream de solo audio (JSON: {url}) → {audio, title}
+#   POST /youtube_video       → URL de stream de vídeo+audio (JSON: {url}) → {stream, title, thumbnail}
+#   POST /youtube_download    → descarga MP3 y registra en BD (JSON: {url}) → {filename}
+#   POST /add_song_to_db      → registra canción en BD (JSON: {filename, title}) → {success}
+# =============================================================================
+
 from flask import Blueprint, render_template, request, jsonify, session, redirect, url_for
 from database.db import get_db_connection
 import os
@@ -10,13 +33,22 @@ youtube_bp = Blueprint("youtube", __name__, template_folder="../templates")
 BASE_MUSIC_FOLDER = os.getenv("BASE_MUSIC_FOLDER", "/app/music")
 
 
-# Función auxiliar para proteger páginas (redirige si no hay sesión)
+# ===============================
+# FUNCIÓN AUXILIAR — Protección de páginas
+# Redirige al login si el usuario no tiene sesión activa.
+# Devuelve None si la sesión es válida, o un redirect si no lo es.
+# ===============================
 def login_required_page():
     if "username" not in session:
         return redirect(url_for("auth.login"))
     return None
 
 
+# ===============================
+# PÁGINA DE YOUTUBE
+# GET /youtube_page
+# Protegida por sesión. Renderiza el buscador de YouTube (youtube.html).
+# ===============================
 @youtube_bp.route("/youtube_page")
 def youtube_page():
     # Protegemos la página del buscador de YouTube
@@ -28,6 +60,14 @@ def youtube_page():
     return render_template("youtube.html")
 
 
+# ===============================
+# BÚSQUEDA EN YOUTUBE
+# POST /youtube_search
+# Recibe JSON con query (texto de búsqueda).
+# Usa yt-dlp en modo extract_flat para obtener los 10 primeros resultados
+# sin descargar ni procesar los vídeos.
+# Devuelve JSON {success, results: [{title, url}], error?}.
+# ===============================
 @youtube_bp.route("/youtube_search", methods=["POST"])
 def youtube_search():
 
@@ -80,6 +120,13 @@ def youtube_search():
         return jsonify({"success": False, "error": str(e)})
 
 
+# ===============================
+# STREAM DE SOLO AUDIO
+# POST /youtube_audio
+# Recibe JSON con url (URL del vídeo de YouTube).
+# Extrae la URL directa del mejor stream de audio disponible sin descargarlo.
+# Devuelve JSON {success, audio, title, error?}.
+# ===============================
 @youtube_bp.route("/youtube_audio", methods=["POST"])
 def youtube_audio():
 
@@ -116,8 +163,16 @@ def youtube_audio():
 
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
-    
-    
+
+
+# ===============================
+# STREAM DE VÍDEO + AUDIO
+# POST /youtube_video
+# Recibe JSON con url (URL del vídeo de YouTube).
+# Busca el primer formato disponible que combine vídeo y audio (prioriza MP4).
+# Si no encuentra un formato combinado, usa la URL general del info dict.
+# Devuelve JSON {success, stream, title, thumbnail, error?}.
+# ===============================
 @youtube_bp.route("/youtube_video", methods=["POST"])
 def youtube_video():
 
@@ -151,9 +206,9 @@ def youtube_video():
 
         for f in info.get("formats", []):
             if (
-                f.get("url")                 # tiene URL válida
-                and f.get("vcodec") != "none"  # contiene video
-                and f.get("acodec") != "none"  # contiene audio
+                f.get("url")                    # tiene URL válida
+                and f.get("vcodec") != "none"   # contiene video
+                and f.get("acodec") != "none"   # contiene audio
             ):
                 stream_url = f["url"]
                 break  # usamos el primero válido
@@ -165,8 +220,8 @@ def youtube_video():
         # Respuesta al frontend
         return jsonify({
             "success": True,
-            "stream": stream_url,           # URL directa del stream
-            "title": info.get("title"),     # título del video
+            "stream": stream_url,               # URL directa del stream
+            "title": info.get("title"),         # título del video
             "thumbnail": info.get("thumbnail")  # miniatura
         })
 
@@ -175,6 +230,19 @@ def youtube_video():
         return jsonify({"success": False, "error": str(e)})
 
 
+# ===============================
+# DESCARGA DE AUDIO EN MP3
+# POST /youtube_download
+# Recibe JSON con url (URL del vídeo de YouTube).
+# Flujo:
+#   1. Crea la carpeta del usuario si no existe.
+#   2. Descarga el mejor audio disponible y lo convierte a MP3 192 kbps.
+#   3. Detecta vídeos privados/eliminados (vía DownloadError o info=None)
+#      y los rechaza con mensaje claro sin lanzar excepción.
+#   4. Usa prepare_filename para obtener el nombre real sanitizado por yt-dlp.
+#   5. Inserta la canción en la tabla songs y suma 1 al total_songs del usuario.
+# Devuelve JSON {success, filename, error?}.
+# ===============================
 @youtube_bp.route("/youtube_download", methods=["POST"])
 def youtube_download():
 
@@ -272,15 +340,19 @@ def youtube_download():
         # Manejo de errores generales
         return jsonify({"success": False, "error": str(e)})
 
+
+# ===============================
+# REGISTRAR CANCIÓN EN BD (inserción de seguridad)
+# POST /add_song_to_db
+# Recibe JSON con filename y title (opcional, usa filename si falta).
+# El frontend llama a este endpoint justo después de confirmar que la
+# descarga terminó con éxito, para garantizar que el registro existe en BD.
+# Si youtube_download ya lo insertó, el INSERT IGNORE lo ignora sin error.
+# Devuelve JSON {success, error?}.
+# ===============================
 @youtube_bp.route("/add_song_to_db", methods=["POST"])
 def add_song_to_db():
-    """
-    Registra en la BD una canción ya descargada por youtube_download.
-    El frontend llama a este endpoint justo después de que la descarga
-    termina con éxito para asegurarse de que el registro existe.
-    Si la canción ya estaba insertada por youtube_download, el INSERT IGNORE
-    la ignora sin error.
-    """
+
     if "username" not in session:
         return jsonify({"success": False, "error": "No has iniciado sesión"}), 401
 

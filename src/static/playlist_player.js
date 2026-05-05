@@ -285,6 +285,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ===============================
+    // REPRODUCCIÓN AUTOMÁTICA AL TERMINAR
+    // Cuando el audio termina, si loop está desactivado pasa automáticamente
+    // a la siguiente canción (aleatoria si shuffle está activo, o la siguiente en orden).
+    // Si loop está activo, el propio elemento <audio> se encarga de repetir (player.loop = true).
+    // ===============================
+    if (player) {
+        player.addEventListener("ended", () => {
+            if (!loop) handleNextClick();
+        });
+    }
+
+    // ===============================
     // INICIALIZACIÓN
     // ===============================
     if (player && getSongs().length > 0) loadSong(0);
